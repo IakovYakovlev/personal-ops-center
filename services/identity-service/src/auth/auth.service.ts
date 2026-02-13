@@ -43,29 +43,35 @@ export class AuthService {
   }
 
   async verifyRegistration(token: string) {
-    const payload = await this.verifyTokenAndCheckBlacklist(token, 'register');
+    try {
+      const payload = await this.verifyTokenAndCheckBlacklist(token, 'register');
 
-    // Generate permanent password
-    const newPassword = this.generatePassword();
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+      await this.checkUserExists(payload.email);
 
-    // Create user in database
-    await this.prisma.user.create({
-      data: {
-        email: payload.email,
-        passwordHash,
-        isVerified: true,
-      },
-      select: { id: true, email: true, createdAt: true },
-    });
+      // Generate permanent password
+      const newPassword = this.generatePassword();
+      const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    // Send password email
-    await this.mailService.sendPassword(payload.email, newPassword, 'register');
+      // Create user in database
+      await this.prisma.user.create({
+        data: {
+          email: payload.email,
+          passwordHash,
+          isVerified: true,
+        },
+        select: { id: true, email: true, createdAt: true },
+      });
 
-    // Mark the token as used
-    await this.blacklistToken(token);
+      // Send password email
+      await this.mailService.sendPassword(payload.email, newPassword, 'register');
 
-    return { message: 'Registration completed, password sent to email' };
+      // Mark the token as used
+      await this.blacklistToken(token);
+
+      return { message: 'Registration completed, password sent to email' };
+    } finally {
+      await this.blacklistToken(token);
+    }
   }
 
   async login(loginDto: LoginDto) {
@@ -126,9 +132,19 @@ export class AuthService {
       return { message: 'If email exists, reset link has been sent' };
     }
 
+    // Invalidate any previous reset tokens for this user
+    await this.redis.del(`reset-token:${user.id}`);
+
     const resetToken = this.jwtService.sign(
       { sub: user.id, type: 'reset' },
       { expiresIn: authConfig.token.reset.expiresIn },
+    );
+
+    // Store the token so we can invalidate it later
+    await this.redis.setex(
+      `reset-token:${user.id}`,
+      authConfig.token.reset.expiresInSeconds,
+      resetToken,
     );
 
     await this.mailService.sendVerificationLink(email, resetToken, 'reset');
@@ -139,26 +155,38 @@ export class AuthService {
   async verifyReset(token: string) {
     const payload = await this.verifyTokenAndCheckBlacklist(token, 'reset');
 
-    // Generate new password
-    const newPassword = this.generatePassword();
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    // Check if this is the current valid reset token
+    const storedToken = await this.redis.get(`reset-token:${payload.sub}`);
+    if (!storedToken || storedToken !== token) {
+      throw new UnauthorizedException('This reset link is no longer valid');
+    }
 
-    await this.prisma.user.update({
-      where: { id: payload.sub },
-      data: { passwordHash },
-    });
+    try {
+      // Generate new password
+      const newPassword = this.generatePassword();
+      const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { email: true },
-    });
+      await this.prisma.user.update({
+        where: { id: payload.sub },
+        data: { passwordHash },
+      });
 
-    await this.mailService.sendPassword(user!.email, newPassword, 'reset');
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { email: true },
+      });
 
-    // Mark the token as used (for 15 minutes while it's still valid)
-    await this.blacklistToken(token);
+      await this.mailService.sendPassword(user!.email, newPassword, 'reset');
 
-    return { message: 'New password sent to email' };
+      // Mark the token as used (for 15 minutes while it's still valid)
+      await this.blacklistToken(token);
+
+      return { message: 'New password sent to email' };
+    } finally {
+      // Invalidate the token after use
+      await this.redis.del(`reset-token:${payload.sub}`);
+      await this.blacklistToken(token);
+    }
   }
 
   private generatePassword(): string {

@@ -14,10 +14,11 @@ export const authConfig = {
   token: {
     verification: {
       expiresIn: '15m',
-      blacklistTtl: 900, // 15 minutes
+      blacklistTtl: 900, // 15 minutes in seconds
     },
     reset: {
       expiresIn: '15m',
+      expiresInSeconds: 900, // 15 minutes in seconds
     },
     access: {
       expiresIn: '15m',

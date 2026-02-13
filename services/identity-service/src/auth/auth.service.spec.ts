@@ -24,6 +24,7 @@ describe('AuthService', () => {
       expire: jest.fn(),
       get: jest.fn(),
       setex: jest.fn(),
+      del: jest.fn(),
     };
 
     const mockPrismaUser = {
@@ -179,74 +180,177 @@ describe('AuthService', () => {
       const expireCalls = redisClient.expire.mock.calls;
       expect(expireCalls).toContainEqual(['emails-sent-today', 86400]);
     });
+  });
 
-    // Tests for forgotPassword
+  describe('forgotPassword', () => {
+    const email = 'test@example.com';
+    const userId = 'user-id';
+
     it('should successfully send reset link for existing user', async () => {
       redisClient.incr.mockImplementation((key: string) => {
-        if (key === `reset-limit:${testEmail}`) return Promise.resolve(1);
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
         if (key === 'emails-sent-today') return Promise.resolve(1);
       });
       redisClient.expire.mockResolvedValue(1);
       prismaService.user.findUnique.mockResolvedValue({
-        id: 'user-id',
-        email: testEmail,
+        id: userId,
+        email: email,
         passwordHash: 'hash',
         isVerified: true,
         createdAt: new Date(),
       });
-      jwtService.sign.mockReturnValue('reset-token-123');
+      redisClient.del.mockResolvedValue(1);
+      const resetToken = 'new-reset-token';
+      jwtService.sign.mockReturnValue(resetToken);
+      redisClient.setex.mockResolvedValue('OK');
       mailService.sendVerificationLink.mockResolvedValue(undefined);
 
-      const result = await service.forgotPassword(testEmail);
+      const result = await service.forgotPassword(email);
 
       expect(result).toEqual({ message: 'If email exists, reset link has been sent' });
-      expect(redisClient.incr).toHaveBeenCalledWith(`reset-limit:${testEmail}`);
-      expect(redisClient.incr).toHaveBeenCalledWith('emails-sent-today');
-      expect(jwtService.sign).toHaveBeenCalledWith(
-        { sub: 'user-id', type: 'reset' },
-        { expiresIn: '15m' },
+      // Should delete previous reset token
+      expect(redisClient.del).toHaveBeenCalledWith(`reset-token:${userId}`);
+      // Should store new reset token with correct TTL
+      expect(redisClient.setex).toHaveBeenCalledWith(
+        `reset-token:${userId}`,
+        authConfig.token.reset.expiresInSeconds,
+        resetToken,
       );
-      expect(mailService.sendVerificationLink).toHaveBeenCalledWith(
-        testEmail,
-        'reset-token-123',
-        'reset',
-      );
+      expect(mailService.sendVerificationLink).toHaveBeenCalledWith(email, resetToken, 'reset');
     });
 
-    it('should return generic message for non-existent user', async () => {
+    it('should delete old reset token before storing new one', async () => {
       redisClient.incr.mockImplementation((key: string) => {
-        if (key === `reset-limit:${testEmail}`) return Promise.resolve(1);
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
+        if (key === 'emails-sent-today') return Promise.resolve(1);
+      });
+      redisClient.expire.mockResolvedValue(1);
+      prismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        email: email,
+        passwordHash: 'hash',
+        isVerified: true,
+        createdAt: new Date(),
+      });
+      redisClient.del.mockResolvedValue(1);
+      const resetToken = 'new-reset-token';
+      jwtService.sign.mockReturnValue(resetToken);
+      redisClient.setex.mockResolvedValue('OK');
+      mailService.sendVerificationLink.mockResolvedValue(undefined);
+
+      await service.forgotPassword(email);
+
+      // Verify del was called before setex (order matters for security)
+      const delCallOrder = redisClient.del.mock.invocationCallOrder[0];
+      const setexCallOrder = redisClient.setex.mock.invocationCallOrder[0];
+      expect(delCallOrder).toBeLessThan(setexCallOrder);
+    });
+
+    it('should not send reset link if user does not exist', async () => {
+      redisClient.incr.mockImplementation((key: string) => {
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
         if (key === 'emails-sent-today') return Promise.resolve(1);
       });
       redisClient.expire.mockResolvedValue(1);
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      const result = await service.forgotPassword(testEmail);
+      const result = await service.forgotPassword(email);
 
       expect(result).toEqual({ message: 'If email exists, reset link has been sent' });
+      // Should NOT delete or create reset token for non-existent user
+      expect(redisClient.del).not.toHaveBeenCalled();
+      expect(redisClient.setex).not.toHaveBeenCalledWith(
+        expect.stringContaining('reset-token:'),
+        expect.anything(),
+        expect.anything(),
+      );
       expect(mailService.sendVerificationLink).not.toHaveBeenCalled();
     });
 
-    it('should throw error when exceeding reset attempts limit', async () => {
-      redisClient.incr.mockResolvedValue(3); // 3rd attempt
-      redisClient.expire.mockResolvedValue(1);
-
-      await expect(service.forgotPassword(testEmail)).rejects.toThrow(HttpException);
-      await expect(service.forgotPassword(testEmail)).rejects.toThrow(
-        'Too many reset attempts. Please try again in 1 hour',
-      );
-    });
-
-    it('should throw error when exceeding daily email limit in forgotPassword', async () => {
+    it('should throw error if reset limit exceeded', async () => {
       redisClient.incr.mockImplementation((key: string) => {
-        if (key === `reset-limit:${testEmail}`) return Promise.resolve(1);
-        if (key === 'emails-sent-today') return Promise.resolve(101); // Over limit
+        if (key === `reset-limit:${email}`) return Promise.resolve(3); // Exceeded limit of 2
+        if (key === 'emails-sent-today') return Promise.resolve(1);
       });
       redisClient.expire.mockResolvedValue(1);
 
-      await expect(service.forgotPassword(testEmail)).rejects.toThrow(ServiceUnavailableException);
-      await expect(service.forgotPassword(testEmail)).rejects.toThrow(
+      await expect(service.forgotPassword(email)).rejects.toThrow(HttpException);
+      await expect(service.forgotPassword(email)).rejects.toThrow(
+        'Too many reset attempts. Please try again in 1 hour',
+      );
+      // Should not reach user lookup
+      expect(prismaService.user.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should throw error if daily email limit exceeded', async () => {
+      redisClient.incr.mockImplementation((key: string) => {
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
+        if (key === 'emails-sent-today') return Promise.resolve(101); // Exceeded daily limit
+      });
+      redisClient.expire.mockResolvedValue(1);
+
+      await expect(service.forgotPassword(email)).rejects.toThrow(ServiceUnavailableException);
+      await expect(service.forgotPassword(email)).rejects.toThrow(
         'Email service limit exceeded. Please try again tomorrow',
+      );
+      // Should not reach user lookup
+      expect(prismaService.user.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should store reset token with correct expiry time', async () => {
+      redisClient.incr.mockImplementation((key: string) => {
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
+        if (key === 'emails-sent-today') return Promise.resolve(1);
+      });
+      redisClient.expire.mockResolvedValue(1);
+      prismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        email: email,
+        passwordHash: 'hash',
+        isVerified: true,
+        createdAt: new Date(),
+      });
+      redisClient.del.mockResolvedValue(1);
+      const resetToken = 'new-reset-token';
+      jwtService.sign.mockReturnValue(resetToken);
+      redisClient.setex.mockResolvedValue('OK');
+      mailService.sendVerificationLink.mockResolvedValue(undefined);
+
+      await service.forgotPassword(email);
+
+      // Verify the token is stored with the correct expiry time
+      expect(redisClient.setex).toHaveBeenCalledWith(
+        `reset-token:${userId}`,
+        900, // authConfig.token.reset.expiresInSeconds
+        resetToken,
+      );
+    });
+
+    it('should generate and sign reset token with correct payload', async () => {
+      redisClient.incr.mockImplementation((key: string) => {
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
+        if (key === 'emails-sent-today') return Promise.resolve(1);
+      });
+      redisClient.expire.mockResolvedValue(1);
+      prismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        email: email,
+        passwordHash: 'hash',
+        isVerified: true,
+        createdAt: new Date(),
+      });
+      redisClient.del.mockResolvedValue(1);
+      const resetToken = 'new-reset-token';
+      jwtService.sign.mockReturnValue(resetToken);
+      redisClient.setex.mockResolvedValue('OK');
+      mailService.sendVerificationLink.mockResolvedValue(undefined);
+
+      await service.forgotPassword(email);
+
+      // Verify JWT was signed with correct payload and options
+      expect(jwtService.sign).toHaveBeenCalledWith(
+        { sub: userId, type: 'reset' },
+        { expiresIn: authConfig.token.reset.expiresIn },
       );
     });
   });
@@ -333,6 +437,34 @@ describe('AuthService', () => {
         'Invalid or expired token',
       );
     });
+
+    it('should throw conflict error if user already exists during verification', async () => {
+      jwtService.verify.mockReturnValue({
+        email: testEmail,
+        type: 'register',
+        iat: Date.now(),
+        exp: Date.now() + 900000,
+      });
+      redisClient.get.mockResolvedValue(null);
+      // User already exists
+      prismaService.user.findUnique.mockResolvedValue({
+        id: 'user-id',
+        email: testEmail,
+        passwordHash: 'hash',
+        isVerified: true,
+        createdAt: new Date(),
+      });
+      redisClient.setex.mockResolvedValue('OK');
+
+      await expect(service.verifyRegistration(testToken)).rejects.toThrow(ConflictException);
+      await expect(service.verifyRegistration(testToken)).rejects.toThrow('Email already in use');
+      // Token should still be blacklisted
+      expect(redisClient.setex).toHaveBeenCalledWith(
+        `blacklist:${testToken}`,
+        authConfig.token.verification.blacklistTtl,
+        '1',
+      );
+    });
   });
 
   describe('verifyReset', () => {
@@ -348,7 +480,11 @@ describe('AuthService', () => {
         iat: Date.now(),
         exp: Date.now() + 900000,
       });
-      redisClient.get.mockResolvedValue(null);
+      redisClient.get.mockImplementation((key: string) => {
+        if (key === `blacklist:${testToken}`) return Promise.resolve(null);
+        if (key === `reset-token:${userId}`) return Promise.resolve(testToken); // Token exists and matches
+      });
+      redisClient.del.mockResolvedValue(1);
       prismaService.user.update.mockResolvedValue({
         id: userId,
         email: testEmail,
@@ -364,16 +500,123 @@ describe('AuthService', () => {
 
       expect(result).toEqual({ message: 'New password sent to email' });
       expect(jwtService.verify).toHaveBeenCalledWith(testToken);
-      expect(redisClient.get).toHaveBeenCalledWith(`blacklist:${testToken}`);
+      expect(redisClient.get).toHaveBeenCalledWith(`reset-token:${userId}`);
       expect(prismaService.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: { passwordHash: expect.any(String) },
       });
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { id: userId },
-        select: { email: true },
-      });
       expect(mailService.sendPassword).toHaveBeenCalledWith(testEmail, expect.any(String), 'reset');
+      // Token should be invalidated after use
+      expect(redisClient.del).toHaveBeenCalledWith(`reset-token:${userId}`);
+      expect(redisClient.setex).toHaveBeenCalledWith(
+        `blacklist:${testToken}`,
+        authConfig.token.verification.blacklistTtl,
+        '1',
+      );
+    });
+
+    it('should throw error if reset token does not exist in Redis', async () => {
+      jwtService.verify.mockReturnValue({
+        sub: userId,
+        type: 'reset',
+        email: testEmail,
+        iat: Date.now(),
+        exp: Date.now() + 900000,
+      });
+      redisClient.get.mockImplementation((key: string) => {
+        if (key === `blacklist:${testToken}`) return Promise.resolve(null);
+        if (key === `reset-token:${userId}`) return Promise.resolve(null); // Token doesn't exist
+      });
+
+      await expect(service.verifyReset(testToken)).rejects.toThrow(UnauthorizedException);
+      await expect(service.verifyReset(testToken)).rejects.toThrow(
+        'This reset link is no longer valid',
+      );
+    });
+
+    it('should throw error if stored reset token does not match provided token', async () => {
+      jwtService.verify.mockReturnValue({
+        sub: userId,
+        type: 'reset',
+        email: testEmail,
+        iat: Date.now(),
+        exp: Date.now() + 900000,
+      });
+      redisClient.get.mockImplementation((key: string) => {
+        if (key === `blacklist:${testToken}`) return Promise.resolve(null);
+        if (key === `reset-token:${userId}`) return Promise.resolve('different-token'); // Token mismatch
+      });
+
+      await expect(service.verifyReset(testToken)).rejects.toThrow(UnauthorizedException);
+      await expect(service.verifyReset(testToken)).rejects.toThrow(
+        'This reset link is no longer valid',
+      );
+    });
+
+    it('should invalidate previous reset tokens when requesting new reset', async () => {
+      const email = 'test@example.com';
+      const userId = 'user-id';
+      const newToken = 'new-reset-token';
+
+      redisClient.incr.mockImplementation((key: string) => {
+        if (key === `reset-limit:${email}`) return Promise.resolve(1);
+        if (key === 'emails-sent-today') return Promise.resolve(1);
+      });
+      redisClient.expire.mockResolvedValue(1);
+      prismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        email: email,
+        passwordHash: 'hash',
+        isVerified: true,
+        createdAt: new Date(),
+      });
+      redisClient.del.mockResolvedValue(1); // Old token deleted
+      jwtService.sign.mockReturnValue(newToken);
+      redisClient.setex.mockResolvedValue('OK');
+      mailService.sendVerificationLink.mockResolvedValue(undefined);
+
+      await service.forgotPassword(email);
+
+      // Verify that old reset token was deleted
+      expect(redisClient.del).toHaveBeenCalledWith(`reset-token:${userId}`);
+      // Verify that new token was stored
+      expect(redisClient.setex).toHaveBeenCalledWith(
+        `reset-token:${userId}`,
+        authConfig.token.reset.expiresInSeconds,
+        newToken,
+      );
+    });
+
+    it('should invalidate reset token after successful password change', async () => {
+      jwtService.verify.mockReturnValue({
+        sub: userId,
+        type: 'reset',
+        email: testEmail,
+        iat: Date.now(),
+        exp: Date.now() + 900000,
+      });
+      redisClient.get.mockImplementation((key: string) => {
+        if (key === `blacklist:${testToken}`) return Promise.resolve(null);
+        if (key === `reset-token:${userId}`) return Promise.resolve(testToken); // Token exists
+      });
+      prismaService.user.update.mockResolvedValue({
+        id: userId,
+        email: testEmail,
+      });
+      prismaService.user.findUnique.mockResolvedValue({
+        id: userId,
+        email: testEmail,
+      });
+      mailService.sendPassword.mockResolvedValue(undefined);
+      redisClient.del.mockResolvedValue(1);
+      redisClient.setex.mockResolvedValue('OK');
+
+      await service.verifyReset(testToken);
+
+      // Token should be deleted from Redis after use
+      const delCalls = redisClient.del.mock.calls;
+      expect(delCalls).toContainEqual([`reset-token:${userId}`]);
+      // Token should also be blacklisted
       expect(redisClient.setex).toHaveBeenCalledWith(
         `blacklist:${testToken}`,
         authConfig.token.verification.blacklistTtl,
