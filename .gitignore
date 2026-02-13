@@ -5,7 +5,6 @@
 # --- [ Secrets and Environment ] ---
 # Ignore ALL .env files in any directory
 **/.env
-**/.env.*
 **/.env.local
 **/.env.*.local
 **/.editorconfig

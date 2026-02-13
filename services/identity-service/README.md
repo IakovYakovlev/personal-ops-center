@@ -1,98 +1,150 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🔐 Identity Service (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📋 Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The **Identity Service** is a centralized authentication and authorization microservice built with NestJS. It acts as the "Gatekeeper" for the entire Personal Ops Center ecosystem. The service is responsible for user management, password security, and issuing self-contained JWT tokens.
 
-## Description
+## 🚀 Key Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **User Management:** Registration and storage of user profiles.
+- **Secure Auth:** Industry-standard password hashing using `bcrypt`.
+- **JWT Issuance:** Generation of Access and Refresh tokens for seamless cross-platform interaction between NestJS and .NET services.
+- **Data Validation:** Strict inbound data validation using `class-validator` and `class-transformer`.
 
-## Project setup
+## 🛠 Tech Stack
 
-```bash
-$ npm install
-```
+- **Framework:** NestJS (Node.js)
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Auth:** Passport.js & JWT Strategy
+- **Language:** TypeScript
 
-## Compile and run the project
+## 📂 Project Structure
 
-```bash
-# development
-$ npm run start
+- `src/auth`: Authentication logic, JWT strategies, and login/registration controllers.
+- `src/users`: User entity management and database interactions.
+- `prisma/`: Database schema definitions and migrations.
 
-# watch mode
-$ npm run start:dev
+## 🚦 API Endpoints
 
-# production mode
-$ npm run start:prod
-```
+| Method | Path                        | Description                                       | Access  |
+| ------ | --------------------------- | ------------------------------------------------- | ------- |
+| POST   | `/auth/register`            | Start user registration (send verification email) | Public  |
+| GET    | `/auth/verify-registration` | Verify email and receive password                 | Public  |
+| POST   | `/auth/login`               | Authenticate and receive JWT token                | Public  |
+| GET    | `/auth/me`                  | Retrieve current user profile                     | Private |
+| POST   | `/auth/logout`              | Logout and blacklist JWT token                    | Private |
+| POST   | `/auth/forgot-password`     | Request password reset (send verification email)  | Public  |
+| GET    | `/auth/verify-reset`        | Verify reset link and receive new password        | Public  |
 
-## Run tests
+## ⚙️ Setup and Installation
 
-```bash
-# unit tests
-$ npm run test
+1. **Install Dependencies:**
 
-# e2e tests
-$ npm run test:e2e
+   ```bash
+   npm install
+   ```
 
-# test coverage
-$ npm run test:cov
-```
+2. Environment Configuration: Create a `.env` file (based on .env.example) and provide the following:
 
-## Deployment
+- `DATABASE_URL`: PostgreSQL connection string.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- `JWT_SECRET`: Symmetric key for signing tokens.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- **Mailtrap Credentials:**
+  - `MAIL_HOST`: `sandbox.smtp.mailtrap.io`
+  - `MAIL_USER`: Your Mailtrap username.
+  - `MAIL_PASS`: Your Mailtrap password.
+
+3. Run Database Migrations:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Start the Server:
 
-## Resources
+```bash
+npm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🔒 Email & Password Recovery
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+For development purposes, this service uses Mailtrap.io to intercept outgoing emails. When a user requests a password reset, an email with a unique token is "sent" to the Mailtrap sandbox, allowing you to view the link and complete the flow on the Frontend.
 
-## Support
+## 🛡 Cross-Service Integration
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+This service signs tokens using a symmetric key. Other services in the ecosystem (built on .NET 9 or NestJS) use the same shared secret to validate the signature, expiration (`exp`), and user claims (e.g., `userId`) without needing to call the Identity Service directly.
 
-## Stay in touch
+## JWT Payload Example:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{
+  "sub": "user_id",
+  "email": "user@example.com",
+  "role": "admin",
+  "iat": 1707552000,
+  "exp": 1707555600
+}
+```
 
-## License
+## Rate Limiting
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Email Rate Limits
+
+To prevent email service abuse and manage daily quotas:
+
+- **Per Email (Registration)**: Maximum 2 registration attempts per hour per email address
+- **Per Email (Password Reset)**: Maximum 2 password reset attempts per hour per email address
+- **Global Daily Limit**: Maximum 100 emails sent per day across all users
+
+When limits are exceeded:
+
+- **Per-email limit**: `429 Too Many Requests` - "Too many attempts. Please try again in 1 hour"
+- **Daily limit**: `503 Service Unavailable` - "Email service limit exceeded. Please try again tomorrow"
+
+### General Rate Limiting
+
+API endpoints are throttled at **3 requests per minute per IP address** using `@nestjs/throttler`.
+
+When exceeded:
+
+- `429 Too Many Requests` with headers:
+  - `X-RateLimit-Limit: 3`
+  - `X-RateLimit-Remaining: 0`
+  - `X-RateLimit-Reset: 1`
+
+## 🔐 JWT Token Types
+
+The service uses JWT tokens with different types for security:
+
+### Token Types
+
+| Type       | Purpose                     | Usage                       | Expiry |
+| ---------- | --------------------------- | --------------------------- | ------ |
+| `register` | Email verification          | `/auth/verify-registration` | 15 min |
+| `reset`    | Password reset verification | `/auth/verify-reset`        | 15 min |
+| `login`    | API authentication          | Protected endpoints         | 15 min |
+
+### Implementation
+
+```typescript
+// Registration token - can ONLY be used for email verification
+const verifyToken = this.jwtService.sign({ email, type: 'register' }, { expiresIn: '15m' });
+
+// Login token - can ONLY be used for API access
+const accessToken = this.jwtService.sign(
+  { sub: user.id, email: user.email, type: 'login' },
+  { expiresIn: '15m' },
+);
+
+// Reset token - can ONLY be used for password reset
+const resetToken = this.jwtService.sign({ sub: user.id, type: 'reset' }, { expiresIn: '15m' });
+```
+
+### Security
+
+- Each token type is validated by `JwtAuthGuard`
+- Using a token for wrong action will result in `401 Unauthorized`
+- Tokens are stored in Redis with TTL for rate limiting
+- Login tokens are blacklisted on logout
