@@ -32,9 +32,9 @@
 
 ### Спринт 1: Foundation & Auth (10.02 - 23.02) — **Текущий этап**
 
-- [ ] Разработка **Identity Service**: JWT, Bcrypt, Passport.js.
-- [ ] Создание **Next.js Dashboard Shell**: Middleware защита, Layout, Sidebar.
-- [ ] Реализация системы единого входа (SSO logic).
+- [V] Разработка **Identity Service**: JWT, Bcrypt, Passport.js.
+- [V] Создание **Next.js Dashboard Shell**: Middleware защита, Layout, Sidebar.
+- [V] Реализация системы единого входа (SSO logic).
 
 ### Спринт 2: AI & Async Processing (24.02 - 09.03)
 
