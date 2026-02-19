@@ -10,7 +10,7 @@
 
 - **Frontend:** Next.js 15 (App Router, ShadCN UI)
 - **Identity:** NestJS + JWT (Access/Refresh tokens)
-- **Services:** Hybrid (NestJS & .NET 9)
+- **Services:** Hybrid (NestJS & .NET 10)
 - **Infrastructure:** PostgreSQL, Redis (BullMQ), Docker
 
 ---
@@ -22,10 +22,10 @@
 _Фокус: Создание "входной двери" и каркаса системы._
 
 - **Неделя 1 (10.02 - 13.02): Identity Service (NestJS)**
-  - [X] Инициализация проекта `identity-service` (NestJS).
-  - [X] Настройка Prisma & PostgreSQL (Модель User).
-  - [X] Механизм JWT: Выдача Access и Refresh токенов.
-  - [X] Реализация Auth: Регистрация, Login, Bcrypt.
+  - [x] Инициализация проекта `identity-service` (NestJS).
+  - [x] Настройка Prisma & PostgreSQL (Модель User).
+  - [x] Механизм JWT: Выдача Access и Refresh токенов.
+  - [x] Реализация Auth: Регистрация, Login, Bcrypt.
 - **Неделя 2 (14.02 - 20.02): Next.js Dashboard (Shell)**
   - [ ] Инициализация `frontend` (Next.js 15, TS, Tailwind).
   - [ ] Установка и настройка ShadCN UI.

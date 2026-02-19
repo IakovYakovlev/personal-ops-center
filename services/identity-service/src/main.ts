@@ -15,6 +15,6 @@ async function bootstrap() {
   );
 
   await app.listen(process.env.PORT ?? 5000);
-  console.log(`🚀 Server running at http://localhost:3000`);
+  console.log(`🚀 Server running at http://localhost:3001`);
 }
 bootstrap();
