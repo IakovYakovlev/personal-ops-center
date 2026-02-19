@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usage {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  plan          String
+  totalSymbols  Int      @default(0)
+  totalRequests Int      @default(0)
+  periodStart   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, plan])
+}
+
+model Plan {
+  id            Int    @id @default(autoincrement())
+  name          String @unique
+  limitRequests Int
+  limitSymbols  Int
+}
+
+model Job {
+  id        String   @id
+  userId    String
+  plan      String
+  status    String // pendign | processing | completed | failed
+  result    Json?
+  error     String?
+  createdAd DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
