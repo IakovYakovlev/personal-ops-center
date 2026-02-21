@@ -10,7 +10,7 @@ export class TextProcessingService {
 
   constructor(
     private readonly llm: LlmService,
-    @Inject('REDIS') private readonly redis: Redis,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
   async processAsync(text: string, jobId: string): Promise<string> {

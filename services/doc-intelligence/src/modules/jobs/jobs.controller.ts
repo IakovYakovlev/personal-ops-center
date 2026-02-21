@@ -6,7 +6,7 @@ export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Get(':id')
-  async getJobResult(@Param('id') jobId: string, @Headers('x-rapidapi-user') userId: string) {
+  async getJobResult(@Param('id') jobId: string, @Headers('user') userId: string) {
     // 1. Сначала проверяем Redis (job выполняется)
     const redisData = await this.jobsService.getJobStatus(jobId, userId);
     if (redisData) return redisData;

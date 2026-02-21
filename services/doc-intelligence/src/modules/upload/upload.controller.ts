@@ -7,16 +7,15 @@ import {
   Headers,
 } from '@nestjs/common';
 import { UploadService } from './upload.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiKeyGuard } from 'src/modules/apikey/apikey.guard';
-import { ApiKeySwagger } from 'src/common/decorators/api-key-swagger.decorator';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadFileSwaggerDto } from 'src/modules/upload/dto/upload-file.swagger.dto';
 import { LogTimeInterceptor } from 'src/common/interceptors/log-time.interceptor';
+import { JwtGuard } from '../auth/jwt.guard';
 
 @ApiTags('upload')
-@ApiKeySwagger()
-@UseGuards(ApiKeyGuard)
+@ApiBearerAuth('JWT')
+@UseGuards(JwtGuard)
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
@@ -28,8 +27,8 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file'), new LogTimeInterceptor('Upload endpoint'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Headers('x-rapidapi-user') userId: string,
-    @Headers('x-rapidapi-subscription') plan: string,
+    @Headers('user') userId: string,
+    @Headers('plan') plan: string,
   ) {
     return await this.uploadService.processUpload(file, userId, plan);
   }

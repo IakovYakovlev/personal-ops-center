@@ -11,7 +11,7 @@ async function bootstrap() {
     .setDescription('AI Document Intelligence API')
     .setVersion('1.0')
     .addTag('docsense')
-    .addApiKey({ type: 'apiKey', name: 'x-api-key', in: 'header' }, 'x-api-key')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
