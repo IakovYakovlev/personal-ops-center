@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PlanStrategyFactory } from './strategies/plan-strategy.factory';
+import { PlanStrategyFactory } from './plan-strategy.factory';
 
 @Injectable()
 export class PlansService {

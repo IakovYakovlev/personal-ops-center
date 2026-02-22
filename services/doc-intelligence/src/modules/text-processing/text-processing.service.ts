@@ -64,7 +64,6 @@ export class TextProcessingService {
       );
     }
 
-    console.log(`-->> Completed merging.`);
     return current[0];
   }
 

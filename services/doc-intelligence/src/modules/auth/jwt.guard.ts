@@ -42,15 +42,19 @@ export class JwtGuard implements CanActivate {
   }
 
   private extractToken(request: any): string | null {
+    // First try Authorization header
     const authorization = request.headers.authorization;
-
-    if (!authorization) {
-      return null;
+    if (authorization) {
+      const [type, token] = authorization.split(' ');
+      if (type === 'Bearer') return token;
     }
 
-    const [type, token] = authorization.split(' ');
+    // Fallback: extract from auth_token cookie
+    if (request.cookies && request.cookies.auth_token) {
+      return request.cookies.auth_token;
+    }
 
-    return type === 'Bearer' ? token : null;
+    return null;
   }
 
   private async isTokenBlacklisted(token: string): Promise<boolean> {

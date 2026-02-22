@@ -9,7 +9,7 @@ async function main() {
     create: {
       name: 'free',
       limitRequests: 100,
-      limitSymbols: 100000,
+      limitSymbols: 100_000,
     },
   });
 
@@ -18,8 +18,8 @@ async function main() {
     update: {},
     create: {
       name: 'pro',
-      limitRequests: 1000,
-      limitSymbols: 1000000,
+      limitRequests: 100,
+      limitSymbols: 100_000,
     },
   });
 
@@ -28,8 +28,8 @@ async function main() {
     update: {},
     create: {
       name: 'ultra',
-      limitRequests: 10000,
-      limitSymbols: 10000000,
+      limitRequests: 100,
+      limitSymbols: 100_000,
     },
   });
 }

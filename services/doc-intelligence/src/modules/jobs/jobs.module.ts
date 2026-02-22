@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { TextProcessingModule } from 'src/modules/text-processing/text-processing.module';
 import { JobsProcessor } from 'src/modules/jobs/jobs.processor';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { JobsProcessor } from 'src/modules/jobs/jobs.processor';
       },
     }),
     TextProcessingModule,
+    AuthModule,
   ],
   providers: [JobsService, PrismaService, JobsProcessor],
   controllers: [JobsController],
