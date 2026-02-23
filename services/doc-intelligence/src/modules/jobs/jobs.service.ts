@@ -68,6 +68,16 @@ export class JobsService {
     if (!job) throw new NotFoundException('Job not found');
     if (job.userId !== userId) throw new ForbiddenException('Access denied');
 
-    return { jobId, status: job.status, result: job.result };
+    // Parse result if it's a string (Prisma sometimes returns JSON as string)
+    let result = job.result;
+    if (typeof result === 'string') {
+      try {
+        result = JSON.parse(result);
+      } catch (e) {
+        // If parsing fails, keep as is
+      }
+    }
+
+    return { jobId, status: job.status, result };
   }
 }

@@ -3,6 +3,7 @@ import { ReadService } from 'src/modules/read/read.service';
 import { UsageService } from 'src/modules/usage/usage.service';
 import { TextProcessingService } from 'src/modules/text-processing/text-processing.service';
 import { BasePlanStrategy } from 'src/modules/plans/strategies/base.plan-strategy';
+import { SyncProcessingResult } from 'src/modules/plans/plan-execution.types';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
@@ -19,8 +20,9 @@ export class FreeStrategy extends BasePlanStrategy {
     return 'free';
   }
 
-  protected processText(text: string): Promise<any> {
+  protected async processText(text: string): Promise<SyncProcessingResult> {
     const jobId: string = uuid();
-    return this.textProcessing.processAsync(text, jobId);
+    const resultJson = await this.textProcessing.processAsync(text, jobId);
+    return JSON.parse(resultJson) as SyncProcessingResult;
   }
 }

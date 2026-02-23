@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ReadService } from 'src/modules/read/read.service';
 import { UsageService } from 'src/modules/usage/usage.service';
 import { BasePlanStrategy } from 'src/modules/plans/strategies/base.plan-strategy';
+import { AsyncProcessingResult } from 'src/modules/plans/plan-execution.types';
 import { JobsService } from 'src/modules/jobs/jobs.service';
 
 @Injectable()
@@ -18,7 +19,7 @@ export class ProStrategy extends BasePlanStrategy {
     return 'pro';
   }
 
-  protected processText(text: string, userId: string): Promise<any> {
+  protected async processText(text: string, userId: string): Promise<AsyncProcessingResult> {
     return this.jobsService.createJob(text, userId, 'pro');
   }
 }

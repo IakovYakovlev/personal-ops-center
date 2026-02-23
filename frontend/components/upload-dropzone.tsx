@@ -18,19 +18,9 @@ export function UploadDropzone({ onFileSelected, isLoading }: UploadDropzoneProp
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
-        // Validation
-        const validTypes = [
-          'application/pdf',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'text/plain',
-        ];
+
+        // Validate file size (accept prop only filters MIME types)
         const maxSize = 5 * 1024 * 1024; // 5MB
-
-        if (!validTypes.includes(file.type)) {
-          alert('Only PDF, DOCX, and TXT files are supported');
-          return;
-        }
-
         if (file.size > maxSize) {
           alert('File size must be less than 5MB');
           return;
@@ -43,13 +33,19 @@ export function UploadDropzone({ onFileSelected, isLoading }: UploadDropzoneProp
     [onFileSelected],
   );
 
+  const onDropRejected = useCallback(() => {
+    alert('Only PDF, DOCX, and TXT files are supported');
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'text/plain': ['.txt'],
     },
+    maxSize: 5 * 1024 * 1024, // Also enforce at dropzone level
     disabled: isLoading,
   });
 

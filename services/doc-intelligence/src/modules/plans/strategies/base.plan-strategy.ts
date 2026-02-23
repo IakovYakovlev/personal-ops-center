@@ -1,4 +1,5 @@
 import { PlanStrategy } from 'src/modules/plans/plan-strategy.interface';
+import { PlanExecutionResponse, ProcessingResult } from 'src/modules/plans/plan-execution.types';
 import { ReadService } from 'src/modules/read/read.service';
 import { UsageService } from 'src/modules/usage/usage.service';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
@@ -9,7 +10,10 @@ export abstract class BasePlanStrategy implements PlanStrategy {
     protected readonly usage: UsageService,
   ) {}
 
-  async execute(input: { file: Express.Multer.File; userId: string }): Promise<any> {
+  async execute(input: {
+    file: Express.Multer.File;
+    userId: string;
+  }): Promise<PlanExecutionResponse> {
     const { file, userId } = input;
 
     // Read file
@@ -43,10 +47,10 @@ export abstract class BasePlanStrategy implements PlanStrategy {
       plan: this.getPlanName(),
       stats: usageCheck.stats,
       result,
-    };
+    } as PlanExecutionResponse;
   }
 
-  protected abstract processText(text: string, userId: string): Promise<any>;
+  protected abstract processText(text: string, userId: string): Promise<ProcessingResult>;
 
   protected abstract getPlanName(): string;
 }

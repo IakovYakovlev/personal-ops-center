@@ -71,6 +71,93 @@
 
 ## 🛡 Безопасность на фронтенде
 
-- Client-side Validation: Проверка расширений (.pdf, .docx, .txt) и размера до начала загрузки.
+### Многоуровневая валидация файлов
 
-- Rate Limit Handling: При получении ошибки 429 фронтенд блокирует кнопку отправки и выводит Toast с таймером обратного отсчета до следующей попытки.
+Валидация реализована в **трёх слоях** для максимальной надёжности и производительности:
+
+#### 1️⃣ UploadDropzone (UX Layer)
+
+**Первая линия защиты — немедленный фидбэк пользователю:**
+
+- ✅ Проверка расширения (.pdf, .docx, .txt)
+- ✅ Проверка размера (< 5MB)
+- ✅ Alert с ошибкой при валидации
+
+```typescript
+// upload-dropzone.tsx
+const validTypes = ['application/pdf', '...'];
+const maxSize = 5 * 1024 * 1024; // 5MB
+
+if (!validTypes.includes(file.type)) {
+  alert('Only PDF, DOCX, and TXT files are supported');
+  return;
+}
+if (file.size > maxSize) {
+  alert('File size must be less than 5MB');
+  return;
+}
+```
+
+#### 2️⃣ handleUpload (Page Layer)
+
+**Страховка перед отправкой — предотвращает ненужные запросы:**
+
+- ✅ Проверка расширения (.pdf, .docx, .txt)
+- ✅ Проверка размера (< 5MB)
+- ✅ Не вызывает `docService.uploadDocument()` если валидация не прошла
+
+```typescript
+// page.tsx - handleUpload
+const validateFile = (file: File): string | null => {
+  const validTypes = ['application/pdf', '...'];
+  if (!validTypes.includes(file.type)) {
+    return 'Invalid file type. Only PDF, DOCX, and TXT are supported.';
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return 'File size exceeds 5MB limit.';
+  }
+  return null;
+};
+```
+
+#### 3️⃣ uploadDocument (Service Layer)
+
+**Финальная переделка перед fetch — экономит ресурсы:**
+
+- ✅ Проверка расширения (.pdf, .docx, .txt)
+- ✅ Проверка размера (< 5MB)
+- ✅ На случай обхода фронт-валидации
+
+```typescript
+// docService.ts - uploadDocument
+const validateFile = (file: File): void => {
+  const validTypes = ['application/pdf', '...'];
+  if (!validTypes.includes(file.type)) {
+    throw new Error('Invalid file type');
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('File too large');
+  }
+};
+```
+
+#### 4️⃣ NestJS Backend
+
+**Серверная валидация — обязательная защита:**
+
+- ✅ Проверка расширения и размера
+- ✅ Проверка содержимого (6000 символов)
+- ✅ Никогда не полагаться только на фронт
+
+### Обработка ошибок валидации
+
+- **UploadDropzone**: Alert сообщение
+- **handleUpload**: Показать ошибку в ErrorCard
+- **docService**: Throw exception, обработка в handleUpload
+
+### Rate Limit Handling
+
+При получении ошибки 429 фронтенд:
+
+- Блокирует кнопку отправки
+- Показывает ошибку в ErrorCard с информацией о лимите

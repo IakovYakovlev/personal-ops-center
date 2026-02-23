@@ -1,31 +1,42 @@
 const API_BASE = 'http://localhost:3002';
 
-function getPlan(): string {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('userPlan') || 'pro';
-  }
-  return 'pro';
-}
-
 export const docService = {
   uploadDocument: async (file: File, strategy: 'sync' | 'async') => {
+    // Validation layer 3: Final check before network request
+    const validTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Only PDF, DOCX, and TXT files are supported.');
+    }
+
+    if (file.size > maxSize) {
+      throw new Error('File size exceeds 5MB limit.');
+    }
+
     const formData = new FormData();
     formData.append('file', file);
+
+    // Strategy determines the plan: sync = free, async = pro
+    const plan = strategy === 'sync' ? 'free' : 'pro';
 
     const response = await fetch(`${API_BASE}/upload/file?strategy=${strategy}`, {
       method: 'POST',
       body: formData,
       credentials: 'include', // Browser automatically sends httpOnly cookie
       headers: {
-        plan: getPlan(),
+        plan,
       },
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again later.');
-      }
-      throw new Error('Upload failed');
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `Upload failed (${response.status})`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -36,15 +47,14 @@ export const docService = {
       method: 'GET',
       credentials: 'include', // Browser automatically sends httpOnly cookie
       headers: {
-        plan: getPlan(),
+        plan: 'pro', // Job results are always from async/pro plan
       },
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded');
-      }
-      throw new Error('Failed to fetch job result');
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `Failed to fetch job result (${response.status})`;
+      throw new Error(errorMessage);
     }
 
     return response.json();

@@ -19,7 +19,12 @@ export class LlmService {
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       const jsonText = jsonMatch ? jsonMatch[0] : raw;
 
-      return JSON.parse(jsonText);
+      // Валидируем что это корректный JSON
+      if (typeof jsonText === 'string') {
+        JSON.parse(jsonText);
+      }
+
+      return jsonText;
     } catch (err) {
       console.error('Error analyzing text:', err);
       throw new InternalServerErrorException('Gemini request failed.');
