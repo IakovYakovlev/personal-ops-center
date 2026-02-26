@@ -133,8 +133,8 @@ frontend/
 ### Как работает
 
 1. **Login/Register** → отправка на `/auth/login` в Identity Service
-2. **Получение токенов** → `accessToken` (15 мин) + `refreshToken` (7 дней)
-3. **Хранение** → localStorage (accessToken) + httpOnly cookie (refreshToken)
+2. **Получение токенов** → `accessToken` (15 мин)
+3. **Хранение** → httpOnly cookie
 4. **Middleware** → проверяет токен перед каждым запросом к `/dashboard`
 5. **404 → Login** → если токен истёк, редирект на `/login`
 

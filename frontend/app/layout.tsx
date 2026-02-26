@@ -1,3 +1,4 @@
+import { QueryProvider } from '@/lib/providers/QueryProvider';
 import './globals.css';
 
 export default function RootLayout({
@@ -7,7 +8,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className=" dark">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <QueryProvider>
+          <main>{children}</main>
+        </QueryProvider>
+      </body>
     </html>
   );
 }
