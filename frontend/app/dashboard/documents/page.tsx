@@ -1,5 +1,17 @@
 'use client';
 
+/**
+ * Documents Page - AI Document Intelligence
+ *
+ * Architecture decisions:
+ * - State management: see ADR-0003 (TanStack Query + Zustand strategy)
+ * - UI structure: see ADR-0004 (JobResult + ActionButtons componentization)
+ *
+ * Related docs:
+ * - docs/architecture/adr/0003-frontend-state-management-strategy.md
+ * - docs/architecture/adr/0004-documents-page-ui-componentization.md
+ */
+
 import { useCallback, useState } from 'react';
 import { UploadDropzone } from '@/components/upload-dropzone';
 import { StrategySelector } from '@/components/strategy-selector';
