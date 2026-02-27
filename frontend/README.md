@@ -253,8 +253,8 @@ export default function MyComponent() {
 - [Identity Service](../identity-service) — Аутентификация (NestJS)
 - [Doc Intelligence](../doc-intelligence) — Обработка документов (NestJS)
 - [Neural Assistant](../neural-assistant) — Чат с ИИ (NestJS)
-- [Data Forge](../data-forge) — Обработка данных (.NET 9)
-- [Insight Aggregator](../insight-aggregator) — Агрегация данных (.NET 9)
+- [Data Forge](../data-forge) — Обработка данных (.NET 10)
+- [Insight Aggregator](../insight-aggregator) — Агрегация данных (.NET 10)
 
 ## 🐛 Troubleshooting
 

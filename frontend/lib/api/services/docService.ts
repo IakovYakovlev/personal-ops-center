@@ -10,7 +10,7 @@
  * - docs/architecture/adr/0005-validation-layers-strategy.md
  */
 
-import { ServerResponse } from '../types/documents';
+import { JobResult, ServerResponse } from '../types/documents';
 
 const API_BASE = process.env.NEXT_PUBLIC_DOCS_API_BASE_URL || 'http://localhost:3002';
 
@@ -67,7 +67,7 @@ export const docService = {
     return response.json() as Promise<ServerResponse>;
   },
 
-  getJobResult: async (jobId: string): Promise<ServerResponse> => {
+  getJobResult: async (jobId: string): Promise<JobResult> => {
     const response = await fetch(`${API_BASE}/jobs/${jobId}`, {
       method: 'GET',
       credentials: 'include', // Browser automatically sends httpOnly cookie
@@ -80,6 +80,6 @@ export const docService = {
       await handleResponseError(response, 'get job result');
     }
 
-    return response.json() as Promise<ServerResponse>;
+    return response.json() as Promise<JobResult>;
   },
 };

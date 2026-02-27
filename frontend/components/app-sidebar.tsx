@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { IconInnerShadowTop, IconBook } from '@tabler/icons-react';
-
+import { IconBook, IconLayoutDashboard } from '@tabler/icons-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -14,32 +13,39 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-  },
-  navMain: [
-    {
-      title: 'AI Document Intelligence',
-      url: '/dashboard/documents',
-      icon: IconBook,
-    },
-  ],
-};
+import Link from 'next/link';
+import { useUser } from '@/lib/contexts/user-context';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { email } = useUser();
+  const displayName = email ? email.split('@')[0].toUpperCase() : '';
+  const initials = email ? email.slice(0, 2).toUpperCase() : '';
+
+  const data = {
+    user: {
+      name: displayName,
+      email: email,
+      initials,
+    },
+    navMain: [
+      {
+        title: 'AI Document Intelligence',
+        url: '/dashboard/documents',
+        icon: IconBook,
+      },
+    ],
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
-              <a href="#">
-                <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
+              <Link href="/dashboard">
+                <IconLayoutDashboard className="size-5!" />
+                <span className="text-base font-semibold">Personal Ops Center</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

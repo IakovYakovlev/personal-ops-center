@@ -3,18 +3,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { docService } from '../../services/docService';
-import { AnalysisResult } from '../../types/documents';
+import { AnalysisResult, JobResult } from '../../types/documents';
 
 const MAX_MS = 30_000; // 30 seconds
 const MAX_TRIES = 30; // 30 attempts
-
-export interface JobResult {
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  result?: AnalysisResult;
-  error?: string;
-  jobId?: string;
-  plan?: string;
-}
 
 interface UseJobPollingOptions {
   onSuccess?: (result: AnalysisResult) => void;

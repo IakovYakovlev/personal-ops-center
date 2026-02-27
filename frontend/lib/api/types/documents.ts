@@ -27,3 +27,11 @@ export interface ServerResponse {
   stats: UsageStats;
   result: AnalysisResult | { jobId: string };
 }
+
+export interface JobResult {
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  result?: AnalysisResult;
+  error?: string;
+  jobId?: string;
+  plan?: string;
+}
