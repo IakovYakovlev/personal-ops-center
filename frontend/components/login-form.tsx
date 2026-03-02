@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loginAction } from '@/app/actions/auth';
 import { RateLimitDialog } from '@/components/rate-limit-dialog';
-import { RateLimitError } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,6 +44,8 @@ export function LoginForm() {
         return;
       }
 
+      // Показать ошибку пользователю
+      toast.error(error instanceof Error ? error.message : 'Unexpected error occurred');
       setIsLoading(false);
     }
   }

@@ -1,7 +1,7 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { getAuthToken } from '@/lib/auth';
+import { getAuthToken } from '@/lib/api/utils/auth';
 import { UserProvider } from '@/lib/contexts/user-context';
 import jwt from 'jsonwebtoken';
 

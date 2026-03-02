@@ -230,7 +230,7 @@ export default function MyComponent() {
 
 ### 📋 Этап 2: Сервисы (недели 3-4)
 
-- [ ] Drag-and-Drop загрузчик
+- [v] Drag-and-Drop загрузчик
 - [ ] Статус задач (Job polling)
 - [ ] Chat с Gemini
 - [ ] RAG поиск в документах

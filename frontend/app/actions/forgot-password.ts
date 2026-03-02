@@ -1,10 +1,10 @@
 'use server';
 
-import { forgotPassword as apiForgotPassword, RateLimitError } from '@/lib/api-client';
+import { authService, RateLimitError } from '@/lib/api/services/authService';
 
 export async function forgotPasswordAction(email: string) {
   try {
-    const response = await apiForgotPassword(email);
+    const response = await authService.forgotPassword(email);
     return { error: false, success: true, message: response.message };
   } catch (error) {
     // Обработать rate limit ошибку

@@ -1,5 +1,5 @@
 import { LoginForm } from '@/components/login-form';
-import { getAuthToken } from '@/lib/auth';
+import { getAuthToken } from '@/lib/api/utils/auth';
 import { redirect } from 'next/dist/client/components/navigation';
 
 export default async function LoginPage() {

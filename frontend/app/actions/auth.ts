@@ -1,13 +1,13 @@
 'use server';
 
-import { login as apiLogin, logout as apiLogout, RateLimitError } from '@/lib/api-client';
-import { setAuthToken, getAuthToken, clearAuthToken } from '@/lib/auth';
+import { authService, RateLimitError } from '@/lib/api/services/authService';
+import { setAuthToken, getAuthToken, clearAuthToken } from '@/lib/api/utils/auth';
 import { redirect } from 'next/navigation';
 
 export async function loginAction(email: string, password: string, redirectTo?: string) {
   try {
     // Отправить запрос логина на сервер
-    const response = await apiLogin(email, password);
+    const response = await authService.login(email, password);
 
     // Сохранить токен в cookies
     await setAuthToken(response.accessToken);
@@ -44,7 +44,7 @@ export async function logoutAction() {
     }
 
     // Отправить запрос логаута на сервер
-    await apiLogout(token);
+    await authService.logout(token);
 
     // Удалить токен из cookies
     await clearAuthToken();

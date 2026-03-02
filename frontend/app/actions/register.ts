@@ -1,6 +1,6 @@
 'use server';
 
-import { register as apiRegister } from '@/lib/api-client';
+import { register as apiRegister } from '@/lib/api/services/authService';
 
 export async function registerAction(email: string) {
   try {

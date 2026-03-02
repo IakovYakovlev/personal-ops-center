@@ -25,9 +25,7 @@ export function ForgotPasswordForm() {
 
       // Если результат содержит ошибку
       if (result?.error) {
-        console.log('-->> Forgot password result:', result);
         if (result.isRateLimit) {
-          console.log('-->> Rate limit error:');
           setRateLimitMessage(result.message);
           setRateLimitOpen(true);
         } else {

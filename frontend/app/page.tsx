@@ -1,4 +1,4 @@
-import { getAuthToken } from '@/lib/auth';
+import { getAuthToken } from '@/lib/api/utils/auth';
 import { redirect } from 'next/navigation';
 
 export default async function Home() {
