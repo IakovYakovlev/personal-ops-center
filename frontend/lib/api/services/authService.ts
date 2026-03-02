@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const AUTH_API_BASE_URL = process.env.NEXT_PUBLIC_AUTH_API_BASE_URL || 'http://localhost:3001';
 
 interface LoginResponse {
   accessToken: string;
@@ -29,7 +29,7 @@ export const authService = {
     const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${AUTH_API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,8 +53,8 @@ export const authService = {
       }
 
       return response.json();
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
         throw new Error('Login request timed out. Please try again.');
       }
       throw err;
@@ -67,7 +67,7 @@ export const authService = {
    * Получить профиль текущего пользователя
    */
   async getCurrentUser(token: string): Promise<UserProfile> {
-    const response = await fetch(`${API_URL}/auth/me`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/auth/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -87,7 +87,7 @@ export const authService = {
    * Выйти из аккаунта
    */
   async logout(token: string): Promise<void> {
-    await fetch(`${API_URL}/auth/logout`, {
+    await fetch(`${AUTH_API_BASE_URL}/auth/logout`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ export const authService = {
    * Зарегистрироваться
    */
   async register(email: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ export const authService = {
    * Проверить регистрацию по токену
    */
   async verifyRegistration(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_URL}/auth/verify-registration?token=${token}`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/auth/verify-registration?token=${token}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export const authService = {
    * Отправить запрос восстановления пароля
    */
   async forgotPassword(email: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export const authService = {
    * Проверить токен сброса пароля
    */
   async verifyReset(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_URL}/auth/verify-reset?token=${token}`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/auth/verify-reset?token=${token}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

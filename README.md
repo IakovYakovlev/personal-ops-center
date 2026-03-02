@@ -6,7 +6,7 @@
 
 ## 🏗 Архитектура системы
 
-Система построена на гибридном стеке (NestJS + .NET 9), что позволяет использовать сильные стороны каждой платформы.
+Система построена на гибридном стеке (NestJS + .NET 10), что позволяет использовать сильные стороны каждой платформы.
 
 ### 🧩 Микросервисы:
 
@@ -22,7 +22,7 @@
 
 - **Frontend:** Next.js 15 (App Router), TypeScript, React Query, Zustand.
 - **UI/UX:** Tailwind CSS, ShadCN UI, Framer Motion (анимация ИИ-ответов).
-- **Backend:** NestJS (Node.js) & ASP.NET Core 9 (.NET).
+- **Backend:** NestJS (Node.js) & ASP.NET Core 10 (.NET).
 - **Storage:** PostgreSQL (Prisma/EF Core), Redis (Queuing & Caching).
 - **AI:** Google Gemini Pro, LangChain.
 
@@ -44,7 +44,7 @@
 
 ### Спринт 3: High-Performance Services (10.03 - 31.03)
 
-- [ ] Разработка сервисов на **.NET 9**.
+- [ ] Разработка сервисов на **.NET 10**.
 - [ ] Настройка межсервисного взаимодействия и единого квотирования.
 - [ ] Финальная полировка UX, темная тема, оптимизация Lighthouse.
 
