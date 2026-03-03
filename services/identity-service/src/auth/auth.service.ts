@@ -37,7 +37,9 @@ export class AuthService {
     );
 
     // Send verification email with link
-    await this.mailService.sendVerificationLink(email, verifyToken, 'register');
+    this.mailService.sendVerificationLink(email, verifyToken, 'register').catch((error) => {
+      console.error(`Failed to send email to ${email}:`, error);
+    });
 
     return { message: 'Verification link sent to email' };
   }
