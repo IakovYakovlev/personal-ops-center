@@ -17,7 +17,7 @@ export async function setAuthToken(token: string) {
   cookieStore.set(TOKEN_KEY, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: 'lax',
     maxAge: COOKIE_MAX_AGE,
     path: '/',
   });

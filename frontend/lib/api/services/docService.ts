@@ -12,7 +12,7 @@
 
 import { JobResult, ServerResponse } from '../types/documents';
 
-const API_BASE = process.env.NEXT_PUBLIC_DOCS_API_BASE_URL || 'http://localhost:3002';
+const API_BASE = '/api/docs';
 
 // Helper: Consistent error handling for failed responses
 const handleResponseError = async (response: Response, operation: string): Promise<never> => {
@@ -50,7 +50,7 @@ export const docService = {
     // Strategy determines the plan: sync = free, async = pro
     const plan = strategy === 'sync' ? 'free' : 'pro';
 
-    const response = await fetch(`${API_BASE}/upload/file?strategy=${strategy}`, {
+    const response = await fetch(`${API_BASE}/upload?strategy=${strategy}`, {
       method: 'POST',
       body: formData,
       credentials: 'include',
