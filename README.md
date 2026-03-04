@@ -10,7 +10,7 @@
 
 ### 🧩 Микросервисы:
 
-1.  **Identity Service (NestJS):** Центральный узел безопасности. Управляет пользователями и сессиями (JWT Access/Refresh).
+1.  **Identity Service (NestJS):** Центральный узел безопасности. Управляет пользователями и сессиями (JWT Access).
 2.  **Doc Intelligence (NestJS):** Асинхронный движок для парсинга и ИИ-анализа документов (PDF/DOCX). Использует BullMQ и Redis.
 3.  **Neural Assistant (NestJS):** Интеллектуальный чат-ассистент с реализацией RAG (Retrieval-Augmented Generation).
 4.  **Data Forge (.NET 10):** Высокопроизводительный сервис для сложных вычислений и генерации отчетов.
@@ -20,7 +20,7 @@
 
 ## 🛠 Технологический стек
 
-- **Frontend:** Next.js 15 (App Router), TypeScript, React Query, Zustand.
+- **Frontend:** Next.js 16 (App Router), TypeScript, TanStack Query.
 - **UI/UX:** Tailwind CSS, ShadCN UI, Framer Motion (анимация ИИ-ответов).
 - **Backend:** NestJS (Node.js) & ASP.NET Core 10 (.NET).
 - **Storage:** PostgreSQL (Prisma/EF Core), Redis (Queuing & Caching).
@@ -39,8 +39,8 @@
 ### Спринт 2: AI & Async Processing (24.02 - 09.03)
 
 - [V] Интеграция готового сервиса **Doc Intelligence**: рефакторинг под JWT.
+- [V] Frontend: Интерфейс мониторинга фоновых задач (Jobs) и Drag-and-Drop загрузка.
 - [ ] Создание **Neural Assistant**: чат со стримингом ответов через Gemini API.
-- [ ] Frontend: Интерфейс мониторинга фоновых задач (Jobs) и Drag-and-Drop загрузка.
 
 ### Спринт 3: High-Performance Services (10.03 - 31.03)
 
