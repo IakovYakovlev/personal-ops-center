@@ -26,9 +26,9 @@ export class AuthService {
   ) {}
 
   async register(email: string) {
+    await this.checkUserExists(email);
     await this.checkRegisterLimit(email);
     await this.checkDailyEmailLimit();
-    await this.checkUserExists(email);
 
     // Generate verification token
     const verifyToken = this.jwtService.sign(
@@ -54,6 +54,8 @@ export class AuthService {
       const newPassword = this.generatePassword();
       const passwordHash = await bcrypt.hash(newPassword, 10);
 
+      await this.blacklistToken(token);
+
       // Create user in database
       await this.prisma.user.create({
         data: {
@@ -66,9 +68,6 @@ export class AuthService {
 
       // Send password email
       await this.mailService.sendPassword(payload.email, newPassword, 'register');
-
-      // Mark the token as used
-      await this.blacklistToken(token);
 
       return { message: 'Registration completed, password sent to email' };
     } finally {
@@ -126,13 +125,13 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    await this.checkResetLimit(email);
-    await this.checkDailyEmailLimit();
-
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       return { message: 'If email exists, reset link has been sent' };
     }
+
+    await this.checkResetLimit(email);
+    await this.checkDailyEmailLimit();
 
     // Invalidate any previous reset tokens for this user
     await this.redis.del(`reset-token:${user.id}`);
@@ -164,6 +163,9 @@ export class AuthService {
     }
 
     try {
+      // Mark the token as used (for 15 minutes while it's still valid)
+      await this.blacklistToken(token);
+
       // Generate new password
       const newPassword = this.generatePassword();
       const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -179,9 +181,6 @@ export class AuthService {
       });
 
       await this.mailService.sendPassword(user!.email, newPassword, 'reset');
-
-      // Mark the token as used (for 15 minutes while it's still valid)
-      await this.blacklistToken(token);
 
       return { message: 'New password sent to email' };
     } finally {
