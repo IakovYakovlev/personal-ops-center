@@ -52,18 +52,11 @@
     /neural-assistant # NestJS + Gemini AI
     /data-forge       # .NET 10 Core Engine
     /insight-aggregator # .NET 10 API Orchestrator
-  docker-compose.yml  # PostgreSQL, Redis, PgAdmin
 ```
 
 ## 🚀 Как запустить (Development)
 
-1. Инфраструктура:
-
-```bash
-docker-compose up -d
-```
-
-2. Backend (Identity Service):
+1. Backend (Identity Service):
 
 ```bash
 cd services/identity-service
@@ -72,13 +65,15 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
-3. Frontend:
+2. Frontend:
 
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+**Примечание:** Для работы сервисов требуется запущенный PostgreSQL и Redis.
 
 ## 📈 Метрики успеха (KPI)
 
