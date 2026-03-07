@@ -28,25 +28,16 @@
 
 ---
 
-## 📅 План реализации (Февраль — Март 2026)
+## 📅 Статус проекта
 
-### Спринт 1: Foundation & Auth (10.02 - 23.02) — **Текущий этап**
+- Текущая стадия: переход к реализации **Neural Assistant** (чат + стриминг ответов + RAG).
+- Завершено: Foundation/Auth и интеграция Doc Intelligence в единую JWT-экосистему.
+- Ближайшие шаги:
+  - Запустить сервис `neural-assistant` и базовый чат-пайплайн с Gemini.
+  - Реализовать retrieval-слой по обработанным документам.
+  - Подготовить UI-чат в Dashboard со streaming-ответами.
 
-- [V] Разработка **Identity Service**: JWT, Bcrypt, Passport.js.
-- [V] Создание **Next.js Dashboard Shell**: Middleware защита, Layout, Sidebar.
-- [V] Реализация системы единого входа (SSO logic).
-
-### Спринт 2: AI & Async Processing (24.02 - 09.03)
-
-- [V] Интеграция готового сервиса **Doc Intelligence**: рефакторинг под JWT.
-- [V] Frontend: Интерфейс мониторинга фоновых задач (Jobs) и Drag-and-Drop загрузка.
-- [ ] Создание **Neural Assistant**: чат со стримингом ответов через Gemini API.
-
-### Спринт 3: High-Performance Services (10.03 - 31.03)
-
-- [ ] Разработка сервисов на **.NET 10**.
-- [ ] Настройка межсервисного взаимодействия и единого квотирования.
-- [ ] Финальная полировка UX, темная тема, оптимизация Lighthouse.
+- Полный и актуальный план ведется в [ROADMAP.md](ROADMAP.md)
 
 ---
 
@@ -54,7 +45,7 @@
 
 ```text
 /personal-ops-center
-  /frontend           # Next.js 15 Application
+  /frontend           # Next.js 16 Application
   /services
     /identity-service # NestJS + JWT Auth
     /doc-intelligence # NestJS + BullMQ + Redis (Ready-to-integrate)
