@@ -54,6 +54,17 @@
     /insight-aggregator # .NET 10 API Orchestrator
 ```
 
+## 🌐 Порты сервисов (Development)
+
+| Сервис           | Порт | URL                   |
+| ---------------- | ---- | --------------------- |
+| frontend         | 3000 | http://localhost:3000 |
+| identity-service | 3001 | http://localhost:3001 |
+| doc-intelligence | 3002 | http://localhost:3002 |
+| neural-assistant | 3003 | http://localhost:3003 |
+
+---
+
 ## 🚀 Как запустить (Development)
 
 1. Backend (Identity Service):

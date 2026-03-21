@@ -1,98 +1,173 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Neural Assistant Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS service for chat-based interaction with processed documents in the Personal Ops Center ecosystem.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Current status: initial scaffold created. The service purpose and development direction are defined, but the chat pipeline is still being implemented.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## What This Service Will Do
 
-## Project setup
+- Accept user chat messages for a selected document
+- Validate JWT issued by `identity-service`
+- Build conversational context from chat history
+- Retrieve relevant document context from the processed data layer
+- Send the final prompt to Gemini
+- Stream the assistant response back to the frontend
+- Persist chat sessions and chat messages
 
-```bash
-$ npm install
+---
+
+## Service Responsibility
+
+`neural-assistant` does not ingest or parse files.
+
+Its responsibility starts after the document has already been processed by `doc-intelligence`.
+
+Separation of concerns:
+
+- `doc-intelligence`: upload, parsing, extraction, preprocessing, analysis-ready document data
+- `neural-assistant`: chat orchestration, history, retrieval, Gemini integration, response streaming
+
+---
+
+## Planned MVP Flow
+
+1. User opens chat in the dashboard
+2. User sees their previously uploaded documents
+3. User selects one document
+4. User sends a question
+5. `neural-assistant` validates JWT and resolves user identity
+6. Service loads recent chat history for the selected chat session
+7. Service retrieves relevant context for the current document
+8. Service sends prompt plus context to Gemini
+9. Service streams the response back to the frontend
+10. Service stores both user and assistant messages
+
+---
+
+## Planned Domain Model
+
+### ChatSession
+
+- `id`
+- `userId`
+- `documentId`
+- `title`
+- `createdAt`
+- `updatedAt`
+
+### ChatMessage
+
+- `id`
+- `chatSessionId`
+- `role` (`user` or `assistant`)
+- `content`
+- `createdAt`
+
+Relationship model:
+
+- one document -> many chat sessions
+- one chat session -> many chat messages
+
+---
+
+## Planned API Surface
+
+These endpoints describe the intended MVP contract and are not fully implemented yet.
+
+- `GET /documents`
+  - returns documents available to the authenticated user for chat
+
+- `POST /chat/stream`
+  - accepts a user message and streams the assistant response
+
+- `GET /chat/sessions/:id/messages`
+  - returns saved chat history for a session
+
+Swagger UI will be exposed under `/docs` during development.
+
+---
+
+## Environment Variables
+
+Use `.env.Example` as the base template.
+
+```env
+# App
+PORT=3003
+NODE_ENV=production
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-## Compile and run the project
+Expected next additions as implementation progresses:
+
+- `JWT_SECRET` or JWKS-related auth config
+- Redis connection settings for blacklist checks
+- Gemini API key
+- database connection string for chat persistence
+- service URLs for internal communication
+
+---
+
+## Local Development
+
+From `services/neural-assistant`:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+npm run start:dev
 ```
 
-## Run tests
+Useful scripts:
 
-```bash
-# unit tests
-$ npm run test
+- `npm run build`
+- `npm run lint`
+- `npm run test`
+- `npm run test:e2e`
 
-# e2e tests
-$ npm run test:e2e
+Default local port: `3003`
 
-# test coverage
-$ npm run test:cov
+---
+
+## Current Project Structure
+
+```text
+services/neural-assistant
+	src/
+		app.module.ts
+		main.ts
+	test/
+	.env.Example
+	package.json
 ```
 
-## Deployment
+Target structure will evolve as modules are added for:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- auth
+- chat
+- llm
+- retrieval
+- redis
+- persistence
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## Integration Notes
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- Frontend will communicate with this service from the dashboard chat UI
+- `identity-service` remains the single source of truth for JWT issuance
+- `doc-intelligence` remains the source of processed document data
+- Redis is expected to be used for JWT blacklist checks and possibly short-lived chat or stream state
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Near-Term Roadmap
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+1. Configure app bootstrap: config, CORS, Swagger, validation
+2. Add JWT auth guard for protected routes
+3. Add Redis-backed blacklist check for revoked tokens
+4. Implement first test chat endpoint
+5. Integrate Gemini
+6. Add persistence for `ChatSession` and `ChatMessage`
+7. Add retrieval flow over processed document context
