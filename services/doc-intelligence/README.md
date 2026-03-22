@@ -11,6 +11,8 @@ Current auth model: JWT from `identity-service` (Bearer token or `auth_token` co
 - Accepts document uploads (`.pdf`, `.docx`, `.txt`)
 - Extracts text and validates content
 - Runs AI analysis via Gemini (`gemini-2.5-flash-lite`)
+- Builds embeddings for document chunks in `pro` mode
+- Stores chunks + vectors in PostgreSQL for semantic search scenarios
 - Supports plan-based processing:
   - `free`: synchronous response with analysis result
   - `pro`: asynchronous job (upload -> `jobId` -> polling)
@@ -55,8 +57,29 @@ Swagger UI: `/docs`
 
 - `pro` plan:
   - Creates background BullMQ job
+  - Splits text into chunks, generates embeddings for each chunk, and persists them in DB
+  - Updates `Document` / `DocumentChunk` records in one transaction with job completion
   - Returns `{ "jobId": "..." }` inside `result`
   - Poll with `GET /jobs/:id`
+
+---
+
+## Embeddings And Search Storage
+
+For `pro` uploads, the worker pipeline does the following:
+
+1. Normalizes and splits document text into chunks.
+2. Generates an embedding vector for every chunk via Gemini (`GEMINI_EMBEDDING_MODEL`).
+3. Stores vectors in PostgreSQL table `DocumentChunk.embedding` (`Float[]`).
+4. Stores chunk text + metadata (`chunkIndex`, `model`, `metadata`) for retrieval and debugging.
+5. Links chunks to a `Document` record and updates `Job` status to `completed` in the same transaction.
+
+This data model is prepared for semantic retrieval workflows (RAG/search) where query embeddings can be compared against stored chunk embeddings.
+
+Current status for MVP:
+
+- Embeddings are generated and persisted automatically in `pro` flow.
+- Dedicated semantic search API endpoint is not exposed yet.
 
 ---
 
@@ -92,6 +115,7 @@ JWT_SECRET=your-secret-key
 
 # AI
 GEMINI_API_KEY=your-gemini-api-key
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 
 # Text processing
 CHUNK_SIZE=50000

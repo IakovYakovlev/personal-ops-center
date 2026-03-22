@@ -7,6 +7,7 @@ import { TextProcessingModule } from 'src/modules/text-processing/text-processin
 import { JobsModule } from 'src/modules/jobs/jobs.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { EmbeddingModule } from './modules/embedding/embedding.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RedisModule } from './modules/redis/redis.module';
     TextProcessingModule,
     JobsModule,
     AuthModule,
+    EmbeddingModule,
   ],
   controllers: [],
   providers: [],

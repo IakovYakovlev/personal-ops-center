@@ -27,12 +27,43 @@ model Plan {
 }
 
 model Job {
-  id        String   @id
-  userId    String
-  plan      String
-  status    String // pendign | processing | completed | failed
-  result    Json?
-  error     String?
-  createdAd DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id
+  userId      String
+  plan        String
+  status      String // pending | processing | completed | failed
+  documentId  String?
+  chunksSaved Int      @default(0)
+  result      Json?
+  error       String?
+  createdAd   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Document {
+  id          String          @id
+  userId      String
+  status      String
+  chunksCount Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  chunks      DocumentChunk[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  chunkIndex Int
+  content    String
+  embedding  Float[]
+  model      String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
 }

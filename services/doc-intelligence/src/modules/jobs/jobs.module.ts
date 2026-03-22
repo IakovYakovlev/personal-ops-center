@@ -6,6 +6,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { TextProcessingModule } from 'src/modules/text-processing/text-processing.module';
 import { JobsProcessor } from 'src/modules/jobs/jobs.processor';
 import { AuthModule } from '../auth/auth.module';
+import { EmbeddingModule } from '../embedding/embedding.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from '../auth/auth.module';
     }),
     TextProcessingModule,
     AuthModule,
+    EmbeddingModule,
   ],
   providers: [JobsService, PrismaService, JobsProcessor],
   controllers: [JobsController],

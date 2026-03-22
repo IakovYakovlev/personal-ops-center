@@ -17,8 +17,9 @@ export class JobsService {
     });
   }
 
-  async createJob(text: string, userId: string, plan: string) {
+  async createJob(text: string, userId: string, plan: string, documentId?: string) {
     const jobId: string = uuid();
+    const docId = documentId ?? uuid();
 
     // Сохраняем запись в PostgreSQL как pending
     await this.prisma.job.create({
@@ -27,20 +28,21 @@ export class JobsService {
         userId,
         plan,
         status: 'pending',
+        documentId: docId,
       },
     });
 
-    // Сохраним временый статус в Redis
+    // Сохраним временный статус в Redis
     await this.redis.set(
       `job:${jobId}`,
-      JSON.stringify({ status: 'pending', userId, plan }),
+      JSON.stringify({ status: 'pending', userId, plan, documentId: docId }),
       'EX',
       60 * 30,
     );
 
     await this.processingQueue.add(
       'process-document',
-      { text, userId, plan },
+      { text, userId, plan, documentId: docId },
       {
         jobId,
         attempts: 5, // retry 5 times
@@ -73,7 +75,7 @@ export class JobsService {
     if (typeof result === 'string') {
       try {
         result = JSON.parse(result);
-      } catch (e) {
+      } catch {
         // If parsing fails, keep as is
       }
     }
