@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -6,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS
-  const corsOrigin = (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',');
+  const corsOrigin = (process.env.CORS_ORIGINS || 'http://localhost:3003').split(',');
   app.enableCors({
     origin: corsOrigin,
     credentials: true,
