@@ -32,4 +32,4 @@ async function bootstrap() {
   console.log(`🚀 Server running at http://localhost:${process.env.PORT ?? 3003}`);
   console.log(`📘 Swagger UI: http://localhost:${process.env.PORT ?? 3003}/docs`);
 }
-bootstrap();
+void bootstrap();

@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { RedisModule } from './redis/redis.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { ThrottlerExceptionFilter } from 'common/filters/throttler.filter';
+import { ThrottlerExceptionFilter } from '../common/filters/throttler.filter';
 
 @Module({
   imports: [

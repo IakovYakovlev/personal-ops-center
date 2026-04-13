@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { JwtService } from '@nestjs/jwt/dist/jwt.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtGuard implements CanActivate {

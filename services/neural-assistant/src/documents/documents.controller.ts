@@ -1,8 +1,8 @@
 import { BadRequestException, Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
-import { type RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
-import { JwtGuard } from 'src/auth/jwt.guard';
-import { ApiBearerAuth } from '@nestjs/swagger/dist/decorators/api-bearer.decorator';
+import { type RequestWithUser } from '../common/interfaces/request-with-user.interface';
+import { JwtGuard } from '../auth/jwt.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('documents')
 @ApiBearerAuth('JWT')
@@ -12,7 +12,7 @@ export class DocumentsController {
 
   @Get()
   async findAll(@Req() request: RequestWithUser) {
-    const userId = request.user?.sub;
+    const userId: string = request.user?.sub;
     if (!userId) {
       throw new BadRequestException('User ID not found in JWT token');
     }
