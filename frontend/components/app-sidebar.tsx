@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { IconBook, IconLayoutDashboard } from '@tabler/icons-react';
+import { IconBook, IconBrain, IconLayoutDashboard } from '@tabler/icons-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -32,6 +32,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: 'AI Document Intelligence',
         url: '/dashboard/documents',
         icon: IconBook,
+      },
+      {
+        title: 'Neural Assistant',
+        url: '/dashboard/neural-assistant',
+        icon: IconBrain,
       },
     ],
   };

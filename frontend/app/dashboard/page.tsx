@@ -35,29 +35,32 @@ export default function DashboardPage() {
                   Upload and analyze documents with AI. Extract summaries, keywords, sentiment, and
                   insights.
                 </CardDescription>
+                <p className="text-xs text-muted-foreground mt-2">🟢 Ready to use</p>
               </CardHeader>
             </Card>
           </Link>
 
           {/* Neural Assistant - Coming Soon */}
-          <Card
-            className={cn(
-              'p-6 transition-all border-2 h-full',
-              'opacity-60 cursor-not-allowed border-muted',
-            )}
-          >
-            <CardHeader className="p-0">
-              <div className="flex items-center gap-2 mb-2">
-                <IconBrain className="size-6 text-muted-foreground" />
-                <CardTitle>Neural Assistant</CardTitle>
-              </div>
-              <CardDescription>
-                Chat with AI assistant. RAG-powered search and question answering for your
-                documents.
-              </CardDescription>
-              <p className="text-xs text-muted-foreground mt-2">🚧 Coming Soon</p>
-            </CardHeader>
-          </Card>
+          <Link href="/dashboard/neural-assistant">
+            <Card
+              className={cn(
+                'p-6 transition-all border-2 cursor-pointer h-full',
+                'border-muted hover:border-primary/50 hover:shadow-lg',
+              )}
+            >
+              <CardHeader className="p-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <IconBrain className="size-6 text-muted-foreground" />
+                  <CardTitle>Neural Assistant</CardTitle>
+                </div>
+                <CardDescription>
+                  Chat with AI assistant. RAG-powered search and question answering for your
+                  documents.
+                </CardDescription>
+                <p className="text-xs text-muted-foreground mt-2">🚧 Coming Soon</p>
+              </CardHeader>
+            </Card>
+          </Link>
 
           {/* Data Forge - Coming Soon */}
           <Card
