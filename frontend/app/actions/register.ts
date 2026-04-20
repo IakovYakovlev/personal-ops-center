@@ -1,6 +1,6 @@
 'use server';
 
-import { authService } from '@/lib/api/services/authService';
+import { authService } from '@/lib/api/services/auth-service';
 
 export async function registerAction(email: string) {
   try {

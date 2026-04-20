@@ -11,12 +11,12 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Get()
-  async findAll(@Req() request: RequestWithUser) {
+  async findAllForUser(@Req() request: RequestWithUser) {
     const userId: string = request.user?.sub;
     if (!userId) {
       throw new BadRequestException('User ID not found in JWT token');
     }
 
-    return await this.documentsService.findAllByUser(userId);
+    return await this.documentsService.findAllForUser(userId, request.headers.authorization);
   }
 }

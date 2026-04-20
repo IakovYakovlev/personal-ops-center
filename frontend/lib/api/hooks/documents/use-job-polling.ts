@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import { docService } from '../../services/docService';
+import { docService } from '../../services/doc-service';
 import { AnalysisResult, JobResult } from '../../types/documents';
 
 const MAX_MS = 30_000; // 30 seconds

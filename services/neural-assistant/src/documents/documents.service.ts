@@ -1,22 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { BadGatewayException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  async findAllByUser(userId: string) {
-    // Возвращаем только нужные поля (id, title, createdAt, updatedAt и т.д.)
-    return await this.prisma.document.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
-        // добавь другие нужные поля
+  async findAllForUser(userId: string, authorizationHeader?: string) {
+    const baseUrl = this.configService.get<string>('DOC_INTELLIGENCE_API_URL');
+    if (!baseUrl) {
+      throw new InternalServerErrorException('DOC_INTELLIGENCE_API_URL is not configured');
+    }
+
+    const url = new URL('/documents', baseUrl);
+    url.searchParams.set('userId', userId);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(authorizationHeader ? { authorization: authorizationHeader } : {}),
       },
-      orderBy: { createdAt: 'desc' },
     });
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new BadGatewayException(
+        `doc-intelligence request failed (${response.status}): ${details}`,
+      );
+    }
+
+    return await response.json();
   }
 }

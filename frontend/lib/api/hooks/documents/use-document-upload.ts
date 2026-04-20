@@ -1,6 +1,6 @@
 'use client';
 
-import { docService } from '@/lib/api/services/docService';
+import { docService } from '@/lib/api/services/doc-service';
 import { ServerResponse } from '@/lib/api/types/documents';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 

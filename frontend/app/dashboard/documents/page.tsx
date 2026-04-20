@@ -15,9 +15,9 @@
 import { useCallback, useState } from 'react';
 import { UploadDropzone } from '@/components/upload-dropzone';
 import { StrategySelector } from '@/components/strategy-selector';
-import { useDocumentUpload } from '@/lib/api/hooks/documents/useDocumentUpload';
+import { useDocumentUpload } from '@/lib/api/hooks/documents/use-document-upload';
 import { AnalysisResult } from '@/lib/api/types/documents';
-import { useJobPolling } from '@/lib/api/hooks/documents/useJobPolling';
+import { useJobPolling } from '@/lib/api/hooks/documents/use-job-polling';
 import { ProcessingState, Strategy } from './types';
 import { JobResult } from './components/job-result';
 import { ActionButtons } from './components/action-buttons';

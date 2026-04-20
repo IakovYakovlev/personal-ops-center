@@ -1,14 +1,12 @@
+'use client';
+
 import { IconPlus, IconSend2 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useNeuralAssistantDocuments } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-documents';
 
 const chats = [
-  { id: 54, name: '13/04/2025' },
-  { id: 55, name: '13/04/2025' },
-];
-
-const documents = [
   { id: 54, name: '13/04/2025' },
   { id: 55, name: '13/04/2025' },
 ];
@@ -53,6 +51,8 @@ const messages = [
 ];
 
 export default function NeuralAssistantPage() {
+  const documentsQuery = useNeuralAssistantDocuments();
+
   return (
     <div className="mx-2 flex flex-col gap-4 xl:h-[calc(100dvh-var(--header-height)-4rem)] xl:overflow-hidden">
       <div>
@@ -101,15 +101,37 @@ export default function NeuralAssistantPage() {
                 <span>Name</span>
               </div>
               <div className="space-y-2 text-sm">
-                {documents.map((document) => (
-                  <div
-                    key={document.id}
-                    className="grid grid-cols-[56px_1fr] gap-x-3 leading-none hover:bg-[#27272A] cursor-pointer rounded"
-                  >
-                    <span>{document.id}</span>
-                    <span className="rounded-sm px-1.5 py-0.5">{document.name}</span>
+                {documentsQuery.isLoading && (
+                  <div className="rounded-sm px-1.5 py-0.5 text-muted-foreground">Loading...</div>
+                )}
+
+                {documentsQuery.isError && (
+                  <div className="rounded-sm px-1.5 py-0.5 text-destructive">
+                    Failed to load documents
                   </div>
-                ))}
+                )}
+
+                {!documentsQuery.isLoading &&
+                  !documentsQuery.isError &&
+                  documentsQuery.data?.map((document, index) => (
+                    <div
+                      key={document.id}
+                      className="grid grid-cols-[56px_1fr] gap-x-3 leading-none hover:bg-[#27272A] cursor-pointer rounded"
+                    >
+                      <span>{index + 1}</span>
+                      <span className="rounded-sm px-1.5 py-0.5">
+                        {new Date(document.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                  ))}
+
+                {!documentsQuery.isLoading &&
+                  !documentsQuery.isError &&
+                  documentsQuery.data?.length === 0 && (
+                    <div className="rounded-sm px-1.5 py-0.5 text-muted-foreground">
+                      No documents yet
+                    </div>
+                  )}
               </div>
             </div>
           </Card>

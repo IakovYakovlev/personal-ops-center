@@ -6,31 +6,22 @@ datasource db {
   provider = "postgresql"
 }
 
-model Document {
-  id          String          @id
-  userId      String
-  status      String
-  chunksCount Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  chunks      DocumentChunk[]
-
-  @@index([userId])
-  @@index([status])
+model ChatList {
+  id            String   @id @default(cuid())
+  userId        String
+  documentId    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastMessageAt DateTime @default(now())
+  isArchived    Boolean  @default(false)
+  chats         Chat[]
 }
 
-model DocumentChunk {
+model Chat {
   id         String   @id @default(cuid())
-  documentId String
-  chunkIndex Int
+  chatListId String
   content    String
-  embedding  Float[]
-  model      String
-  metadata   Json?
   createdAt  DateTime @default(now())
 
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  @@unique([documentId, chunkIndex])
-  @@index([documentId])
+  chatList ChatList @relation(fields: [chatListId], references: [id], onDelete: Cascade)
 }

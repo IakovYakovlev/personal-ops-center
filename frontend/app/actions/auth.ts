@@ -1,6 +1,6 @@
 'use server';
 
-import { authService, RateLimitError } from '@/lib/api/services/authService';
+import { authService, RateLimitError } from '@/lib/api/services/auth-service';
 import { setAuthToken, getAuthToken, clearAuthToken } from '@/lib/api/utils/auth';
 import { redirect } from 'next/navigation';
 

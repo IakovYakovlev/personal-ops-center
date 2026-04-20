@@ -8,6 +8,7 @@ import { JobsModule } from 'src/modules/jobs/jobs.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { EmbeddingModule } from './modules/embedding/embedding.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { EmbeddingModule } from './modules/embedding/embedding.module';
     JobsModule,
     AuthModule,
     EmbeddingModule,
+    DocumentsModule,
   ],
   controllers: [],
   providers: [],

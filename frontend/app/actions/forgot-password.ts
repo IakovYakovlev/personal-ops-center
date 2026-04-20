@@ -1,6 +1,6 @@
 'use server';
 
-import { authService, RateLimitError } from '@/lib/api/services/authService';
+import { authService, RateLimitError } from '@/lib/api/services/auth-service';
 
 export async function forgotPasswordAction(email: string) {
   try {
