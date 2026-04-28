@@ -1,0 +1,122 @@
+version: '3.9'
+
+services:
+  postgres-docs:
+    image: postgres:15
+    container_name: postgres-docs
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: DocSenseDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata-docs:/var/lib/postgresql/data
+
+  postgres-neural:
+    image: postgres:15
+    container_name: postgres-neural
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: neural_assistant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5434:5432'
+    volumes:
+      - pgdata-neural:/var/lib/postgresql/data
+
+  postgres-identity:
+    image: postgres:15
+    container_name: postgres-identity
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: identity_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5435:5432'
+    volumes:
+      - pgdata-identity:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+
+  doc-intelligence:
+    build: ./services/doc-intelligence
+    container_name: doc-intelligence
+    depends_on:
+      - postgres-docs
+      - redis
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres-docs:5432/DocSenseDb?schema=public
+      REDIS_URL: redis://redis:6379
+      PORT: 3002
+      JWT_SECRET: your-secret-key
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3002
+    ports:
+      - '3002:3002'
+    command: npm run start:prod
+
+  neural-assistant:
+    build: ./services/neural-assistant
+    container_name: neural-assistant
+    depends_on:
+      - postgres-neural
+      - redis
+      - doc-intelligence
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres-neural:5432/neural_assistant_db?schema=public
+      REDIS_URL: redis://redis:6379
+      PORT: 3003
+      JWT_SECRET: your-secret-key
+      DOC_INTELLIGENCE_API_URL: http://doc-intelligence:3002
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3003
+    ports:
+      - '3003:3003'
+    command: npm run start:prod
+
+  identity-service:
+    build: ./services/identity-service
+    container_name: identity-service
+    depends_on:
+      - postgres-identity
+      - redis
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-identity:5432/identity_service
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      JWT_SECRET: your-secret-key
+      APP_URL: http://localhost:3001
+    ports:
+      - '3001:3001'
+    command: npm run start:prod
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    depends_on:
+      - doc-intelligence
+      - neural-assistant
+      - identity-service
+    environment:
+      NEXT_PUBLIC_NEURAL_ASSISTANT_API_BASE_URL: http://neural-assistant:3003
+      NEXT_PUBLIC_DOC_INTELLIGENCE_API_BASE_URL: http://doc-intelligence:3002
+      NEXT_PUBLIC_IDENTITY_API_BASE_URL: http://identity-service:3001
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    command: npm run start
+
+volumes:
+  pgdata-docs:
+  pgdata-neural:
+  pgdata-identity:
+  redisdata:
