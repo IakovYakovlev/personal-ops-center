@@ -22,25 +22,25 @@
 _Фокус: Создание "входной двери" и каркаса системы._
 
 - **Неделя 1 (10.02 - 13.02): Identity Service (NestJS)**
-  - [v] Инициализация проекта `identity-service` (NestJS).
-  - [v] Настройка Prisma & PostgreSQL (Модель User).
-  - [v] Механизм JWT: Выдача Access и Refresh токенов.
-  - [v] Реализация Auth: Регистрация, Login, Bcrypt.
+  - [x] Инициализация проекта `identity-service` (NestJS).
+  - [x] Настройка Prisma & PostgreSQL (Модель User).
+  - [x] Механизм JWT: Выдача Access и Refresh токенов.
+  - [x] Реализация Auth: Регистрация, Login, Bcrypt.
 - **Неделя 2 (14.02 - 20.02): Next.js Dashboard (Shell)**
-  - [v] Инициализация `frontend` (Next.js 16, TS, Tailwind).
-  - [v] Установка и настройка ShadCN UI.
-  - [v] Создание защищенных роутов и Middleware для проверки сессии.
-  - [v] Страницы Login/Register и базовая верстка Sidebar.
+  - [x] Инициализация `frontend` (Next.js 16, TS, Tailwind).
+  - [x] Установка и настройка ShadCN UI.
+  - [x] Создание защищенных роутов и Middleware для проверки сессии.
+  - [x] Страницы Login/Register и базовая верстка Sidebar.
 
 ### Этап 2: Интеллектуальные сервисы (21 фев — 06 марта)
 
 _Фокус: Интеграция ИИ и асинхронной обработки документов._
 
 - **Неделя 3 (21.02 - 27.02): Doc Intelligence (NestJS)**
-  - [v] Перенос готового проекта `AI Document Intelligence` в общую экосистему.
-  - [v] Рефакторинг Auth: Переход с API Key на JWT валидацию.
-  - [v] UI: Создание Drag-and-Drop загрузчика.
-  - [v] UI: Поллинг статуса задач из BullMQ (Jobs мониторинг).
+  - [x] Перенос готового проекта `AI Document Intelligence` в общую экосистему.
+  - [x] Рефакторинг Auth: Переход с API Key на JWT валидацию.
+  - [x] UI: Создание Drag-and-Drop загрузчика.
+  - [x] UI: Поллинг статуса задач из BullMQ (Jobs мониторинг).
 - **Неделя 4 (28.02 - 06.03): Neural Assistant (NestJS)**
   - [ ] Создание сервиса для чата с Gemini.
   - [ ] Реализация RAG: Поиск контекста в обработанных документах.
