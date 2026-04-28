@@ -3,8 +3,10 @@
 import { IconPlus, IconSend2 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ListPanel } from './components/ListPanel';
 import { Input } from '@/components/ui/input';
 import { useNeuralAssistantDocuments } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-documents';
+import { useState } from 'react';
 
 const chats = [
   { id: 54, name: '13/04/2025' },
@@ -52,89 +54,56 @@ const messages = [
 
 export default function NeuralAssistantPage() {
   const documentsQuery = useNeuralAssistantDocuments();
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | number | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | number | null>(null);
 
   return (
-    <div className="mx-2 flex flex-col gap-4 xl:h-[calc(100dvh-var(--header-height)-4rem)] xl:overflow-hidden">
+    <div className="mx-5 flex flex-col gap-4 xl:h-[calc(100dvh-var(--header-height)-4rem)] xl:overflow-hidden">
       <div>
         <h1 className="text-3xl font-bold">Neural Assistant</h1>
       </div>
 
-      <div className="grid min-h-0 gap-4 xl:flex-1 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="flex min-h-0 flex-col gap-4 xl:pr-1">
-          {/* Chats list */}
-          <Card className="flex min-h-0 flex-1 flex-col gap-0 px-4 py-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[20px] font-semibold leading-none">Chats list</h2>
+      <div className="grid min-h-0 gap-5 xl:flex-1 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="flex min-h-0 flex-col gap-5">
+          <ListPanel
+            title="Chats list"
+            items={chats}
+            selectedId={selectedChatId}
+            onSelect={setSelectedChatId}
+            getId={(item) => item.id}
+            renderItem={(chat) => [
+              <span key="id" className="rounded-sm py-0.5">
+                {chat.id}
+              </span>,
+              <span key="name" className="rounded-sm px-1.5 py-0.5">
+                {chat.name}
+              </span>,
+            ]}
+            headerAction={
               <Button size="icon-sm" variant="ghost" className="size-7 cursor-pointer rounded-md">
                 <IconPlus className="size-5" />
               </Button>
-            </div>
+            }
+          />
 
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-lg p-3">
-              <div className="mb-2 grid grid-cols-[56px_1fr] gap-x-3 border-b border-border/60 pb-2 text-xs text-muted-foreground text-[12px]">
-                <span>Id</span>
-                <span>Name</span>
-              </div>
-              <div className="space-y-2 text-sm">
-                {chats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className="grid grid-cols-[56px_1fr] gap-x-3 leading-none hover:bg-[#27272A] cursor-pointer rounded"
-                  >
-                    <span>{chat.id}</span>
-                    <span className="rounded-sm px-1.5 py-0.5">{chat.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-
-          {/* Documents list */}
-          <Card className="flex min-h-0 flex-1 flex-col gap-0 px-4 py-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[20px] font-semibold leading-none">Documents list</h2>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-lg p-3">
-              <div className="mb-2 grid grid-cols-[56px_1fr] gap-x-3 border-b border-border/60 pb-2 text-xs text-muted-foreground text-[12px]">
-                <span>Id</span>
-                <span>Name</span>
-              </div>
-              <div className="space-y-2 text-sm">
-                {documentsQuery.isLoading && (
-                  <div className="rounded-sm px-1.5 py-0.5 text-muted-foreground">Loading...</div>
-                )}
-
-                {documentsQuery.isError && (
-                  <div className="rounded-sm px-1.5 py-0.5 text-destructive">
-                    Failed to load documents
-                  </div>
-                )}
-
-                {!documentsQuery.isLoading &&
-                  !documentsQuery.isError &&
-                  documentsQuery.data?.map((document, index) => (
-                    <div
-                      key={document.id}
-                      className="grid grid-cols-[56px_1fr] gap-x-3 leading-none hover:bg-[#27272A] cursor-pointer rounded"
-                    >
-                      <span>{index + 1}</span>
-                      <span className="rounded-sm px-1.5 py-0.5">
-                        {new Date(document.createdAt).toLocaleDateString('ru-RU')}
-                      </span>
-                    </div>
-                  ))}
-
-                {!documentsQuery.isLoading &&
-                  !documentsQuery.isError &&
-                  documentsQuery.data?.length === 0 && (
-                    <div className="rounded-sm px-1.5 py-0.5 text-muted-foreground">
-                      No documents yet
-                    </div>
-                  )}
-              </div>
-            </div>
-          </Card>
+          <ListPanel
+            title="Documents list"
+            items={documentsQuery.data ?? []}
+            selectedId={selectedDocumentId}
+            onSelect={setSelectedDocumentId}
+            getId={(item) => item.id}
+            renderItem={(document, index) => [
+              <span key="id" className="rounded-sm py-0.5">
+                {index + 1}
+              </span>,
+              <span key="name" className="rounded-sm px-1.5 py-0.5">
+                {new Date(document.createdAt).toLocaleDateString('ru-RU')}
+              </span>,
+            ]}
+            loading={documentsQuery.isLoading}
+            error={documentsQuery.isError}
+            emptyText="No documents yet"
+          />
         </div>
 
         <Card className="min-h-0 gap-0 overflow-hidden px-0 py-0 xl:h-full">
