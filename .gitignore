@@ -82,3 +82,4 @@ Thumbs.db
 **/pids
 *.pid
 *.seed
+*.drawio

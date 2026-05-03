@@ -6,56 +6,44 @@ import { Card } from '@/components/ui/card';
 import { ListPanel } from './components/ListPanel';
 import { Input } from '@/components/ui/input';
 import { useNeuralAssistantDocuments } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-documents';
-import { useState } from 'react';
-
-const chats = [
-  { id: 54, name: '13/04/2025' },
-  { id: 55, name: '13/04/2025' },
-];
-
-const messages = [
-  {
-    id: 1,
-    role: 'assistant',
-    content:
-      'Если нужно, чтобы текст выглядел более естественно для глаза клиента:\n• Разнообразие: сайт рыба текст поможет дизайнеру, верстальщику, вебмастеру генерировать несколько абзацев.\n• Гибкость: вы можете выбрать количество предложений, слов или абзацев для заполнения макета.\n• Удобство: это позволяет оценить визуальное восприятие типографики, не отвлекаясь на смысл самого контента.',
-  },
-  {
-    id: 2,
-    role: 'user',
-    content:
-      'Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Вдали от всех живут они в буквенных домах.',
-  },
-  {
-    id: 3,
-    role: 'assistant',
-    content:
-      'Задача организации, в особенности же реализация намеченных плановых заданий играет важную роль в формировании систем массового участия. Идейные соображения высшего порядка представляют собой интересный эксперимент проверки модели развития.',
-  },
-  {
-    id: 4,
-    role: 'assistant',
-    content:
-      'Если нужно, чтобы текст выглядел более естественно для глаза клиента:\n• Разнообразие: сайт рыба текст поможет дизайнеру, верстальщику, вебмастеру генерировать несколько абзацев.\n• Гибкость: вы можете выбрать количество предложений, слов или абзацев для заполнения макета.\n• Удобство: это позволяет оценить визуальное восприятие типографики, не отвлекаясь на смысл самого контента.',
-  },
-  {
-    id: 5,
-    role: 'user',
-    content:
-      'Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Вдали от всех живут они в буквенных домах.',
-  },
-  {
-    id: 6,
-    role: 'assistant',
-    content:
-      'Задача организации, в особенности же реализация намеченных плановых заданий играет важную роль в формировании систем массового участия. Идейные соображения высшего порядка представляют собой интересный эксперимент проверки модели развития.',
-  },
-];
+import { useNeuralAssistantChats } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-chats';
+import { useState, useMemo } from 'react';
+import { useNeuralAssistantChatMessages } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-chat-messages';
 
 export default function NeuralAssistantPage() {
   const documentsQuery = useNeuralAssistantDocuments();
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | number | null>(null);
+  const chatsQuery = useNeuralAssistantChats();
+  const [stateSelectedDocumentId, setStateSelectedDocumentId] = useState<string | number | null>(
+    null,
+  );
   const [selectedChatId, setSelectedChatId] = useState<string | number | null>(null);
+  const chatMessagesQuery = useNeuralAssistantChatMessages(selectedChatId);
+
+  // Получаем выбранный чат (мемоизировано)
+  const memoSelectedChat = useMemo(
+    () => chatsQuery.data?.find((chat) => chat.id === selectedChatId) || null,
+    [chatsQuery.data, selectedChatId],
+  );
+
+  // Если у выбранного чата есть documentId, используем его, иначе — локальное состояние (мемо)
+  const memoSelectedDocumentId = useMemo(
+    () =>
+      memoSelectedChat && memoSelectedChat.documentId
+        ? memoSelectedChat.documentId
+        : stateSelectedDocumentId,
+    [memoSelectedChat, stateSelectedDocumentId],
+  );
+
+  // setSelectedDocumentId только если не заблокировано (мемо)
+  const memoHandleSelectDocument = useMemo(
+    () =>
+      selectedChatId == null
+        ? () => {}
+        : memoSelectedChat?.documentId != null
+          ? () => {} // нельзя выбрать другой документ
+          : setStateSelectedDocumentId,
+    [selectedChatId, memoSelectedChat, setStateSelectedDocumentId],
+  );
 
   return (
     <div className="mx-5 flex flex-col gap-4 xl:h-[calc(100dvh-var(--header-height)-4rem)] xl:overflow-hidden">
@@ -67,18 +55,21 @@ export default function NeuralAssistantPage() {
         <div className="flex min-h-0 flex-col gap-5">
           <ListPanel
             title="Chats list"
-            items={chats}
+            items={chatsQuery.data ?? []}
             selectedId={selectedChatId}
             onSelect={setSelectedChatId}
             getId={(item) => item.id}
-            renderItem={(chat) => [
+            renderItem={(chat, index) => [
               <span key="id" className="rounded-sm py-0.5">
-                {chat.id}
+                {index + 1}
               </span>,
-              <span key="name" className="rounded-sm px-1.5 py-0.5">
-                {chat.name}
+              <span key="date" className="rounded-sm px-1.5 py-0.5">
+                {new Date(chat.createdAt).toLocaleDateString('ru-RU')}
               </span>,
             ]}
+            loading={chatsQuery.isLoading}
+            error={chatsQuery.isError}
+            emptyText="No chats yet"
             headerAction={
               <Button size="icon-sm" variant="ghost" className="size-7 cursor-pointer rounded-md">
                 <IconPlus className="size-5" />
@@ -86,45 +77,54 @@ export default function NeuralAssistantPage() {
             }
           />
 
-          <ListPanel
-            title="Documents list"
-            items={documentsQuery.data ?? []}
-            selectedId={selectedDocumentId}
-            onSelect={setSelectedDocumentId}
-            getId={(item) => item.id}
-            renderItem={(document, index) => [
-              <span key="id" className="rounded-sm py-0.5">
-                {index + 1}
-              </span>,
-              <span key="name" className="rounded-sm px-1.5 py-0.5">
-                {new Date(document.createdAt).toLocaleDateString('ru-RU')}
-              </span>,
-            ]}
-            loading={documentsQuery.isLoading}
-            error={documentsQuery.isError}
-            emptyText="No documents yet"
-          />
+          <div className={selectedChatId == null ? 'pointer-events-none opacity-50' : ''}>
+            <ListPanel
+              title="Documents list"
+              items={documentsQuery.data ?? []}
+              selectedId={memoSelectedDocumentId}
+              onSelect={memoHandleSelectDocument}
+              getId={(item) => item.id}
+              renderItem={(document, index) => [
+                <span key="id" className="rounded-sm py-0.5">
+                  {index + 1}
+                </span>,
+                <span key="name" className="rounded-sm px-1.5 py-0.5">
+                  {new Date(document.createdAt).toLocaleDateString('ru-RU')}
+                </span>,
+              ]}
+              loading={documentsQuery.isLoading}
+              error={documentsQuery.isError}
+              emptyText="No documents yet"
+            />
+          </div>
         </div>
 
         <Card className="min-h-0 gap-0 overflow-hidden px-0 py-0 xl:h-full">
           <div className="flex h-full min-h-0 flex-col">
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
-                >
+              {chatMessagesQuery.isLoading && <div>Загрузка сообщений...</div>}
+              {chatMessagesQuery.isError && <div>Ошибка загрузки сообщений</div>}
+              {chatMessagesQuery.data?.length === 0 && <div>Нет сообщений</div>}
+              {chatMessagesQuery.data?.map((message, idx) => {
+                // Чередуем роли: чётные индексы — user, нечётные — assistant
+                const isUser = idx % 2 === 0;
+                return (
                   <div
-                    className={
-                      message.role === 'user'
-                        ? 'max-w-[78%] rounded-2xl rounded-tr-sm bg-muted px-4 py-3 text-sm leading-relaxed'
-                        : 'max-w-[82%] rounded-2xl rounded-tl-sm border border-border/70 bg-card px-4 py-3 text-sm leading-relaxed'
-                    }
+                    key={message.id}
+                    className={isUser ? 'flex justify-end' : 'flex justify-start'}
                   >
-                    <p className="whitespace-pre-line">{message.content}</p>
+                    <div
+                      className={
+                        isUser
+                          ? 'max-w-[78%] rounded-2xl rounded-tr-sm bg-muted px-4 py-3 text-sm leading-relaxed'
+                          : 'max-w-[82%] rounded-2xl rounded-tl-sm border border-border/70 bg-card px-4 py-3 text-sm leading-relaxed'
+                      }
+                    >
+                      <p className="whitespace-pre-line">{message.content}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="border-t border-border/70 p-3 md:p-4">

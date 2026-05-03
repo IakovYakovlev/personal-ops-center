@@ -2,6 +2,8 @@ import {
   type ApiErrorResponse,
   type NeuralAssistantDocumentsResponse,
 } from '@/lib/api/types/neural-assistant';
+import type { ChatListResponse } from '@/lib/api/types/chat-list';
+import type { ChatItem } from '@/lib/api/types/chat-item';
 
 const API_BASE = '/api/neural-assistant';
 
@@ -23,5 +25,30 @@ export const neuralAssistantService = {
     }
 
     return response.json() as Promise<NeuralAssistantDocumentsResponse>;
+  },
+  async getChats(): Promise<ChatListResponse> {
+    const response = await fetch(`${API_BASE}/chat-list`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      await handleResponseError(response, 'fetch neural-assistant chats');
+    }
+
+    return response.json() as Promise<ChatListResponse>;
+  },
+
+  async getChatMessages(chatListId: string | number): Promise<ChatItem[]> {
+    const response = await fetch(`${API_BASE}/chat?chatListId=${chatListId}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      await handleResponseError(response, 'fetch neural-assistant chat messages');
+    }
+
+    return response.json() as Promise<ChatItem[]>;
   },
 };

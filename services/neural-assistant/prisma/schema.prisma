@@ -9,7 +9,7 @@ datasource db {
 model ChatList {
   id            String   @id @default(cuid())
   userId        String
-  documentId    String
+  documentId    String? // nullable, связь с документом из doc-intelligence
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lastMessageAt DateTime @default(now())
