@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthToken } from '@/lib/api/utils/auth';
-import type { ChatItem } from '@/lib/api/types/chat';
+import type { ChatItem } from '@/lib/api/types/chat-item';
 import type { ApiErrorResponse } from '@/lib/api/types/neural-assistant';
 
 const NEURAL_ASSISTANT_API_BASE =
