@@ -13,8 +13,7 @@ export const authConfig = {
   },
   token: {
     verification: {
-      // TODO: Вернуть обратно 15m --- IGNORE ---
-      expiresIn: '3h',
+      expiresIn: '15m',
       blacklistTtl: 900, // 15 minutes in seconds
     },
     reset: {
@@ -22,7 +21,8 @@ export const authConfig = {
       expiresInSeconds: 900, // 15 minutes in seconds
     },
     access: {
-      expiresIn: '15m',
+      // TODO: Вернуть обратно 15m --- IGNORE ---
+      expiresIn: '3h',
     },
   },
 } as const;

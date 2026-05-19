@@ -43,3 +43,37 @@ export async function GET(request: Request): Promise<NextResponse<ChatItem[] | A
     status: response.status,
   });
 }
+
+export async function POST(request: Request): Promise<NextResponse<ChatItem | ApiErrorResponse>> {
+  const token = await getAuthToken();
+
+  if (!token) {
+    return NextResponse.json<ApiErrorResponse>({ message: 'Missing JWT token' }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+
+  const response = await fetch(`${NEURAL_ASSISTANT_API_BASE}/chat`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const responseBody = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      typeof responseBody?.message === 'string'
+        ? responseBody.message
+        : `neural-assistant request failed (${response.status})`;
+
+    return NextResponse.json<ApiErrorResponse>({ message }, { status: response.status });
+  }
+
+  return NextResponse.json<ChatItem>(responseBody as ChatItem, {
+    status: response.status,
+  });
+}

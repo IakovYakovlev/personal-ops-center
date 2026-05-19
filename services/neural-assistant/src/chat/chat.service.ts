@@ -38,6 +38,17 @@ export class ChatService {
     }
   }
 
+  private async updateLastMessageAt(chatListId: string, timestamp: Date): Promise<void> {
+    await this.prisma.chatList.update({
+      where: {
+        id: chatListId,
+      },
+      data: {
+        lastMessageAt: timestamp,
+      },
+    });
+  }
+
   async findAllForChatList(userId: string, chatListId: string): Promise<ChatItem[]> {
     await this.assertChatListOwnership(userId, chatListId);
 
@@ -64,14 +75,7 @@ export class ChatService {
         select: chatSelect,
       });
 
-      await tx.chatList.update({
-        where: {
-          id: input.chatListId,
-        },
-        data: {
-          lastMessageAt: now,
-        },
-      });
+      await this.updateLastMessageAt(input.chatListId, now);
 
       return createdChat;
     });

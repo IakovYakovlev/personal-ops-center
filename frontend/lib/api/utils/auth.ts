@@ -1,7 +1,12 @@
 import { cookies } from 'next/headers';
 
+import { jwtDecode } from 'jwt-decode';
 const TOKEN_KEY = 'auth_token';
-const COOKIE_MAX_AGE = 15 * 60; // 15 minutes
+const FALLBACK_MAX_AGE_SECONDS = 3 * 60 * 60;
+
+interface DecodedJwtPayload {
+  exp?: number;
+}
 
 export interface AuthToken {
   accessToken: string;
@@ -12,13 +17,26 @@ export interface AuthToken {
  * Сохранить JWT токен в cookies на сервере
  */
 export async function setAuthToken(token: string) {
-  const expiresAt = Date.now() + COOKIE_MAX_AGE * 1000;
+  // Если не удалось прочитать exp из токена, используем безопасный fallback.
+  let maxAge = FALLBACK_MAX_AGE_SECONDS;
+  let expiresAt = Date.now() + maxAge * 1000;
+
+  try {
+    // jwtDecode не валидирует подпись, только декодирует payload
+    const decoded = jwtDecode<DecodedJwtPayload>(token);
+    if (typeof decoded.exp === 'number') {
+      const nowSec = Math.floor(Date.now() / 1000);
+      // Не даем maxAge уйти в отрицательное значение для cookie.
+      maxAge = Math.max(decoded.exp - nowSec, 0);
+      expiresAt = decoded.exp * 1000;
+    }
+  } catch {}
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_KEY, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: COOKIE_MAX_AGE,
+    maxAge,
     path: '/',
   });
   return expiresAt;
