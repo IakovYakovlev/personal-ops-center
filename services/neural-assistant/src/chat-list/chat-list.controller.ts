@@ -5,6 +5,7 @@ import {
   Patch,
   Param,
   Body,
+  Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -28,6 +29,16 @@ export class ChatListController {
     }
 
     return await this.chatListService.findAllForUser(userId);
+  }
+
+  @Post()
+  async create(@Req() request: RequestWithUser): Promise<ChatListItem> {
+    const userId: string = request.user?.sub;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in JWT token');
+    }
+
+    return await this.chatListService.create(userId);
   }
 
   @Patch(':id')

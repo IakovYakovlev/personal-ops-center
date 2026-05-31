@@ -13,6 +13,7 @@ import { useNeuralAssistantChats } from '@/lib/api/hooks/neural-assistant/use-ne
 import { useState, useMemo, useRef } from 'react';
 import { useNeuralAssistantChatMessages } from '@/lib/api/hooks/neural-assistant/use-neural-assistant-chat-messages';
 import { useCreateChatMessage } from '@/lib/api/hooks/neural-assistant/use-create-chat-message';
+import { useCreateChatList } from '@/lib/api/hooks/neural-assistant/use-create-chat-list';
 import { useUpdateChatList } from '@/lib/api/hooks/neural-assistant/use-update-chat-list';
 
 /**
@@ -36,7 +37,12 @@ export default function NeuralAssistantPage() {
   const chatMessagesQuery = useNeuralAssistantChatMessages(selectedChatId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const createMessageMutation = useCreateChatMessage();
+  const createChatListMutation = useCreateChatList();
   const updateChatListMutation = useUpdateChatList();
+
+  const handleCreateChatList = async () => {
+    await createChatListMutation.mutateAsync();
+  };
 
   // Получаем выбранный чат (мемоизировано)
   const memoSelectedChat = useMemo(
@@ -138,7 +144,13 @@ export default function NeuralAssistantPage() {
             error={chatsQuery.isError}
             emptyText="No chats yet"
             headerAction={
-              <Button size="icon-sm" variant="ghost" className="size-7 cursor-pointer rounded-md">
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                className="size-7 cursor-pointer rounded-md"
+                disabled={createChatListMutation.isPending}
+                onClick={() => void handleCreateChatList()}
+              >
                 <IconPlus className="size-5" />
               </Button>
             }

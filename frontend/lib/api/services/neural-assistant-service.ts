@@ -39,6 +39,20 @@ export const neuralAssistantService = {
     return response.json() as Promise<ChatListResponse>;
   },
 
+  async createChatList(): Promise<ChatListItem> {
+    const response = await fetch(`${API_BASE}/chat-list`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      await handleResponseError(response, 'create chat list');
+    }
+
+    return response.json() as Promise<ChatListItem>;
+  },
+
   async getChatMessages(chatListId: string | number): Promise<ChatItem[]> {
     const response = await fetch(`${API_BASE}/chat?chatListId=${chatListId}`, {
       method: 'GET',

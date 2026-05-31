@@ -20,6 +20,15 @@ export type ChatListItem = Prisma.ChatListGetPayload<{
 export class ChatListService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async create(userId: string): Promise<ChatListItem> {
+    return await this.prisma.chatList.create({
+      data: {
+        userId,
+      },
+      select: chatListSelect,
+    });
+  }
+
   async findAllForUser(userId: string): Promise<ChatListItem[]> {
     return await this.prisma.chatList.findMany({
       where: { userId },
