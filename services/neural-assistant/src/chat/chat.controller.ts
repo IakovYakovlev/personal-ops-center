@@ -8,24 +8,11 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ChatService, type ChatItem } from './chat.service';
 import { JwtGuard } from '../auth/jwt.guard';
 import { type RequestWithUser } from '../common/interfaces/request-with-user.interface';
-
-class CreateChatDto {
-  @ApiProperty({
-    description: 'Chat list ID that owns the messages thread',
-    example: 'cmabcd1234567890',
-  })
-  chatListId!: string;
-
-  @ApiProperty({
-    description: 'Message text to append to the chat',
-    example: 'Сделай краткое summary документа',
-  })
-  content!: string;
-}
+import { CreateChatDto } from './dtos/create-chat.dot';
 
 @Controller('chat')
 @ApiBearerAuth('JWT')
