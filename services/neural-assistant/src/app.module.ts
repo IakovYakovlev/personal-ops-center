@@ -5,6 +5,8 @@ import { ChatListModule } from './chat-list/chat-list.module';
 import { ChatModule } from './chat/chat.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
+import { EmbeddingModule } from './embedding/embedding.module';
+import { ChatMediatorModule } from './chat-mediator/chat-mediator.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { AuthModule } from './auth/auth.module';
     DocumentsModule,
     ChatListModule,
     ChatModule,
+    EmbeddingModule,
+    ChatMediatorModule,
   ],
   controllers: [],
   providers: [],
