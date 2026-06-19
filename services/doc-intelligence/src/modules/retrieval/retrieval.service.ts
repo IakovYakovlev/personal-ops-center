@@ -10,7 +10,7 @@ export class RetrievalService {
     userId: string;
     queryEmbedding: number[];
     topK?: number;
-    minSimilarity: number;
+    minSimilarity?: number;
     documentId: string;
   }): Promise<RetrievedChunk[]> {
     const { userId, queryEmbedding, topK = 3, minSimilarity = 0.75, documentId } = params;

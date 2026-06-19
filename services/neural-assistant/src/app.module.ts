@@ -7,6 +7,7 @@ import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { EmbeddingModule } from './embedding/embedding.module';
 import { ChatMediatorModule } from './chat-mediator/chat-mediator.module';
+import { DockIntelligenceClientModule } from './dock-intelligence-client/dock-intelligence-client.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ChatMediatorModule } from './chat-mediator/chat-mediator.module';
     ChatModule,
     EmbeddingModule,
     ChatMediatorModule,
+    DockIntelligenceClientModule,
   ],
   controllers: [],
   providers: [],

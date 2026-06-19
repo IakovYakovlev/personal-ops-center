@@ -9,7 +9,6 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { EmbeddingModule } from './modules/embedding/embedding.module';
 import { DocumentsModule } from './modules/documents/documents.module';
-import { RetrievalService } from './modules/retrieval/retrieval.service';
 import { RetrievalModule } from './modules/retrieval/retrieval.module';
 
 @Module({
@@ -27,9 +26,8 @@ import { RetrievalModule } from './modules/retrieval/retrieval.module';
     EmbeddingModule,
     DocumentsModule,
     RetrievalModule,
-    RetrievalModule,
   ],
   controllers: [],
-  providers: [RetrievalService],
+  providers: [],
 })
 export class AppModule {}
