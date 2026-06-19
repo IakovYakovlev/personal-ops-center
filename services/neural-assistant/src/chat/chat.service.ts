@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateChatDto } from './dtos/create-chat.dot';
 
 const chatSelect = {
   id: true,
@@ -12,11 +13,6 @@ const chatSelect = {
 export type ChatItem = Prisma.ChatGetPayload<{
   select: typeof chatSelect;
 }>;
-
-export interface CreateChatInput {
-  chatListId: string;
-  content: string;
-}
 
 @Injectable()
 export class ChatService {
@@ -61,7 +57,7 @@ export class ChatService {
     });
   }
 
-  async createForChatList(userId: string, input: CreateChatInput): Promise<ChatItem> {
+  async createForChatList(userId: string, input: CreateChatDto): Promise<ChatItem> {
     await this.assertChatListOwnership(userId, input.chatListId);
 
     const now = new Date();

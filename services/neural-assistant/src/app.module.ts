@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { EmbeddingModule } from './embedding/embedding.module';
 import { ChatMediatorModule } from './chat-mediator/chat-mediator.module';
 import { DockIntelligenceClientModule } from './dock-intelligence-client/dock-intelligence-client.module';
+import { PromptBuilderModule } from './prompt-builder/prompt-builder.module';
+import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { DockIntelligenceClientModule } from './dock-intelligence-client/dock-in
     EmbeddingModule,
     ChatMediatorModule,
     DockIntelligenceClientModule,
+    PromptBuilderModule,
+    LlmModule,
   ],
   controllers: [],
   providers: [],

@@ -13,12 +13,16 @@ import { ChatService, type ChatItem } from './chat.service';
 import { JwtGuard } from '../auth/jwt.guard';
 import { type RequestWithUser } from '../common/interfaces/request-with-user.interface';
 import { CreateChatDto } from './dtos/create-chat.dot';
+import { ChatMediatorService } from 'src/chat-mediator/chat-mediator.service';
 
 @Controller('chat')
 @ApiBearerAuth('JWT')
 @UseGuards(JwtGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatMediatorService: ChatMediatorService,
+  ) {}
 
   @Get()
   async findAllForChatList(
@@ -39,7 +43,7 @@ export class ChatController {
 
   @Post()
   @ApiBody({ type: CreateChatDto })
-  async create(@Req() request: RequestWithUser, @Body() body: CreateChatDto): Promise<ChatItem> {
+  async create(@Req() request: RequestWithUser, @Body() body: CreateChatDto): Promise<ChatItem[]> {
     const userId: string = request.user?.sub;
     if (!userId) {
       throw new BadRequestException('User ID not found in JWT token');
@@ -53,9 +57,13 @@ export class ChatController {
       throw new BadRequestException('content is required');
     }
 
-    return await this.chatService.createForChatList(userId, {
-      chatListId: body.chatListId,
-      content: body.content,
-    });
+    const result: ChatItem[] = await this.chatMediatorService.sendMessage(
+      userId,
+      body.content,
+      body.chatListId,
+      request.headers['authorization'],
+    );
+
+    return result;
   }
 }

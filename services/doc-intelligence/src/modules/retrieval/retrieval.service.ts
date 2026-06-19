@@ -31,11 +31,28 @@ export class RetrievalService {
           dc."documentId",
           dc."chunkIndex",
           dc.content,
-          cosine_similarity(dc.embedding::double precision[], ${queryEmbedding}::double precision[]) AS similarity
+          (
+            SELECT
+              CASE
+                WHEN vectors.norm_a = 0 OR vectors.norm_b = 0 THEN NULL
+                ELSE vectors.dot_product / (vectors.norm_a * vectors.norm_b)
+              END
+            FROM (
+              SELECT
+                SUM(a.value * b.value) AS dot_product,
+                SQRT(SUM(a.value * a.value)) AS norm_a,
+                SQRT(SUM(b.value * b.value)) AS norm_b
+              FROM unnest(dc.embedding::double precision[]) WITH ORDINALITY AS a(value, idx)
+              JOIN unnest(${queryEmbedding}::double precision[]) WITH ORDINALITY AS b(value, idx)
+                ON a.idx = b.idx
+            ) AS vectors
+          ) AS similarity
         FROM "DocumentChunk" dc
         JOIN "Document" d ON d.id = dc."documentId"
         WHERE d."userId" = ${userId}
           AND dc."documentId" = ${documentId}
+          AND dc.embedding IS NOT NULL
+          AND cardinality(dc.embedding) = cardinality(${queryEmbedding}::double precision[])
       )
       SELECT
         id,

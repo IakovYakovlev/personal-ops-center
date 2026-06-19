@@ -37,7 +37,9 @@ export class DockIntelligenceClientService {
 
     if (!response.ok) {
       const details = await response.text();
-      throw new Error(`doc-intelligence request failed (${response.status}): ${details}`);
+      throw new Error(
+        `doc-intelligence request failed (${response.status}) for documentId=${documentId} at ${url.toString()}: ${details}`,
+      );
     }
 
     return await response.json();
